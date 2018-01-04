@@ -1,0 +1,211 @@
+<?php
+$businessUserId = $this->getCustomerId();
+$id = $businessUserId;
+//$businessUserId = $this->getBusiness()->getBusinessuserId(); 
+$baseUrl = $this->getBaseUrl();
+$mediaUrl = $this->getMediaUrl();
+$customerid = $this->getCustomerId();
+?>
+<?php
+	$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+	$customerObj = $objectManager->create('Magento\Customer\Model\Customer')->load($businessUserId);
+	$businessName = $customerObj->getBusinessName();
+	$isimageAvailable = $customerObj->getProfileImage();
+	$profilepic = $mediaUrl.'wysiwyg/user-default.jpg';
+	if($customerObj->getId()){
+		if($isimageAvailable!=NULL && $isimageAvailable!=''){
+			$profilepic = $mediaUrl.$isimageAvailable;			
+		}else{
+			$profilepic = $mediaUrl.'wysiwyg/user-default.jpg';
+		}
+	}
+	$modelcollection = $objectManager->get('\Icecube\Businesses\Model\ResourceModel\Businesses\CollectionFactory')->create();
+	$modelcollection->addFieldToFilter('businessuser_id' , $businessUserId);
+	$businessData = $modelcollection->getFirstItem();
+	$businessesName = $businessData->getBusinessPageUrl(); 
+	?>
+	<?php /*$Businessid = $this->getBusiness()->getId();
+	$allReviews = $this->getReviews($Businessid);
+
+	$totalRatings = 0;
+	$totalReviews = 0;
+	foreach($allReviews as $review){
+		if($review->getRating()!='' && $review->getRating()!=NULL){
+			$totalRatings += $review->getRating();
+			$totalReviews++;
+		}
+	}
+	$rating = $totalRatings / $totalReviews;
+	$temprating = 0;
+	if($rating){
+		$temprating = $rating;
+	 	$rating = $rating * 20;
+		$temprating = number_format((float)$temprating, 1, '.', '');
+		$rating = number_format((float)$rating, 1, '.', ''); 
+	}else{
+		$rating = 0;
+	}
+*/
+
+
+	 ?>
+<?php if($businessUserId){ ?>
+<div class="col-sm-3">
+	<div class="admin_left">
+		<form name="profile-image-form" id="profile-image" >
+		<input type="hidden" name="id" value="<?php echo $id; ?>">
+		<input type="hidden" name="image" value="profile">
+		<?php if(isset($customerid)): ?>
+			<input type="hidden" name="customerid" value="<?php echo $customerid; ?>">
+		<?php endif;?>
+		<img src="<?php echo $profilepic; ?>" alt="" id="profile"/>
+		<?php if($customerid==$businessUserId){ ?>
+		<div class="profile-overlay">
+			<div class="image-upload">
+				<label class="ttl_addphoto" for="file-input" class="cover">Upload Profile</label>
+				<?php
+				/**
+				* 
+				* @var Upload Function(Image, Form Id, Maximum image height, Minimum Image height,hidden tag name 'image' value, filesize, modalid, modalclass, input type file id)
+				* 
+				*/ ?>
+				<input id="file-input" name="profile-img" type="file" onchange="upload(this,'profile-image',300,176,'profile',102400,'myModalimg','myImageModal','file-input')"/>
+			</div>
+		</div>
+		<?php } ?>
+		<div class="load-content" style="display: none;">
+			<div class="loader">&nbsp;</div>
+		</div>
+		</form>
+		<div class="admin_profile">
+			<div class="profile_top">
+				<h2 class="profile_title"><?php echo $businessName; ?></h2>
+			</div>
+			<div class="user_rating">
+				<img src="<?php echo $mediaUrl; ?>wysiwyg/demo-stars_1.JPG" alt="" />
+			</div> 
+			<!-- <div class="customer-reviews-count">
+				<div class="ratings-out-of"><?php //echo $temprating.'/5'; ?></div>
+				<div class="total_yellow_rating">
+					<div class="total-innner-rating-div" style="width: <?php //echo $rating;?>%;">
+						<img src="http://www.freeboxes.com/pub/media/wysiwyg/yellow_rating.png" alt="">
+
+					</div>
+					<img class="gray-rating" src="http://www.freeboxes.com/pub/media/wysiwyg/gray_rating.png" alt="">
+				</div>
+			</div> -->
+			<div class="profile_bottom">
+				<ul>
+					<li><a title="Home" href="<?php echo $baseUrl; ?>">Home</a></li>
+					<li><a title="About" href="<?php echo $baseUrl; ?>businesses/<?php echo $businessesName;?>/about/">About</a></li>
+					<?php if($customerid){ ?>
+						<li><a title="Free Offers" href="<?php echo $baseUrl; ?>businesses/<?php echo $businessesName;?>/free-offers/">Free Offers</a></li>
+					<?php } ?>
+					<li><a title="Locations" href="<?php echo $baseUrl; ?>businesses/<?php echo $businessesName;?>/locations/">Locations</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+	
+</div>
+<?php }else{
+ 
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$request = $objectManager->create('Magento\Framework\App\RequestInterface');
+//echo $request->getPathInfo(); die;
+ $identifier = trim($request->getPathInfo(), '/');
+
+if(strpos($identifier, 'businesses/view/index/id') !== false) {
+                return null ;
+        }
+		else if(strpos($identifier, 'businesses/') !== false) {
+			$patharr = explode("/",$identifier);
+			$urlpath = end($patharr);
+			$adOfferManager = FALSE;			
+			$profilesettings = FALSE;
+			$about = FALSE;
+			$analytics = FALSE;
+			$freeoffers = FALSE;
+			$locations = FALSE;
+			$coupon_details = FALSE;
+			if(strpos($identifier, 'ad-offer-manager') !== FALSE){
+				$urlpath = $patharr[count($patharr)-2];
+				$adOfferManager = TRUE;
+			}else if(strpos($identifier, 'profile-settings') !== FALSE){
+				$urlpath = $patharr[count($patharr)-2];
+				$profilesettings = TRUE;
+			}else if(strpos($identifier, 'analytics') !== FALSE){
+				$urlpath = $patharr[count($patharr)-2];
+				$analytics = TRUE;
+			}           
+			else if(strpos($identifier, 'about') !== FALSE){
+				$urlpath = $patharr[count($patharr)-2];
+				$about = TRUE;
+			} 
+			else if(strpos($identifier, 'free-offers') !== FALSE){
+				$urlpath = $patharr[count($patharr)-2];
+				$freeoffers = TRUE;
+			}else if(strpos($identifier, 'locations') !== FALSE){
+				$urlpath = $patharr[count($patharr)-2];
+				$locations = TRUE;
+			}else if(strpos($identifier, 'coupon-details') !== FALSE){
+				$urlpath = $patharr[count($patharr)-2];
+				$coupon_details = TRUE;
+			}else{
+				
+			}
+	}
+
+?>
+
+<div class="col-sm-3">
+	<div class="admin_left">
+		<form name="profile-image-form" id="profile-image" >
+		
+		
+		<img src="<?php echo $profilepic; ?>" alt="" id="profile"/>
+		
+		<div class="profile-overlay">
+			<div class="image-upload">
+				<label class="ttl_addphoto" for="file-input" class="cover">Upload Profile</label>
+			</div>
+		</div>
+		
+		<div class="load-content" style="display: none;">
+			<div class="loader">&nbsp;</div>
+		</div>
+		</form>
+		<div class="admin_profile">
+			<div class="profile_top">
+				<h2 class="profile_title">Agency Replacement</h2>
+			</div>
+			<div class="user_rating">
+				<img src="<?php echo $mediaUrl; ?>wysiwyg/demo-stars_1.JPG" alt="" />
+			</div>
+			<!-- <div class="customer-reviews-count">
+				<div class="ratings-out-of"><?php //echo $temprating.'/5'; ?></div>
+				<div class="total_yellow_rating">
+					<div class="total-innner-rating-div" style="width: <?php //echo $rating;?>%;">
+						<img src="http://www.freeboxes.com/pub/media/wysiwyg/yellow_rating.png" alt="">
+
+					</div>
+					<img class="gray-rating" src="http://www.freeboxes.com/pub/media/wysiwyg/gray_rating.png" alt="">
+				</div>
+			</div> -->
+			<div class="profile_bottom">
+				<ul>
+					<li><a title="Home" href="<?php echo $baseUrl; ?>">Home</a></li>
+					<li><a title="About" href="<?php echo $baseUrl; ?>businesses/<?php echo $urlpath;?>/about/">About</a></li>
+					<?php if($customerid){ ?>
+						<li><a title="Free Offers" href="<?php echo $baseUrl; ?>businesses/<?php echo $urlpath;?>/free-offers/">Free Offers</a></li>
+					<?php } ?>
+					<li><a title="Locations" href="<?php echo $baseUrl; ?>businesses/<?php echo $urlpath;?>/locations/">Locations</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+	
+</div>
+
+<?php
+}?>

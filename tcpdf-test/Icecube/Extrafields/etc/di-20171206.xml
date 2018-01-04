@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+	<preference for="Magento\Customer\Model\EmailNotification" type="Icecube\Extrafields\Model\EmailNotification" />
+	<preference for="Magento\Customer\Controller\Account\CreatePost" type="Icecube\Extrafields\Controller\Account\CreatePost" />
+	<preference for="Magento\Customer\Controller\Account\LoginPost" type="Icecube\Extrafields\Controller\Account\LoginPost" />
+	<preference for="Magento\Newsletter\Model\Subscriber" type="Icecube\Extrafields\Model\Subscriber" />
+	<preference for="Magento\Newsletter\Controller\Subscriber\NewAction" type="Icecube\Extrafields\Controller\Subscriber\NewAction" />
+</config>

@@ -1,0 +1,205 @@
+<?php 
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance(); 
+$businessTimeline = $objectManager->create('Icecube\Businesses\Model\Index');
+$mediaUrl = $this->getMediaUrl();
+$allBusinesses = $this->getAllBusinesses();
+$customerid = FALSE;
+$customerSession = $objectManager->get('Magento\Customer\Model\Session');
+if($customerSession->isLoggedIn()) {
+  $customer = $customerSession->getCustomer(); 
+  $customerid = $customer->getId(); 
+}
+?>
+<section class="admin_main_content">
+<div class="container">
+<div class="row"><?php echo $this->getLayout()->createBlock('Magento\Cms\Block\Block')->setBlockId('account-left-sidebar-one')->toHtml();?>
+<div class="col-sm-9 pull-right">
+<div class="boxes_content business-listings">
+<div class="load-business-content">
+ <div class="loader">&nbsp;</div>
+</div>
+<form class="find-business" action="" id="find-business" method="post" >
+<h2>Find Businesses</h2>
+<?php
+$objectManager = Magento\Framework\App\ObjectManager::getInstance();
+$category = $objectManager->create('\Icecube\Extrafields\Model\Category\Types')->getAllOptions();
+?>
+<div class="select_group">
+	<select class="selectpicker validate-select find_business_prefer" name="find_business_prefer">
+		<option value="">Filter by your preference here</option>
+		<?php
+  		foreach($category as $c):
+    	$value = $c['value'];
+
+    	if($c['value'] != '0'): ?>
+		<option value="<?php echo $c['value']; ?>" ><?php echo $c['label']; ?></option>
+		 <?php endif;
+  		endforeach;
+		?>
+	</select>
+</div>
+<div class="row">
+<?php $i=1; ?>
+<?php foreach($allBusinesses as $business){ ?>
+<?php $businessDetail = $this->getCustomerDetails($business->getBusinessuserId());
+
+if($i > 3){
+	break;
+	}else{
+	$tab_profile = $mediaUrl.'wysiwyg/user-default.jpg';
+	if($businessDetail->getId()){
+		$isimageAvailable = $businessDetail->getProfileImage();
+		if($isimageAvailable!=NULL && $isimageAvailable!=''){
+			$tab_profile = $mediaUrl.$isimageAvailable;			
+		}else{
+			$tab_profile = $mediaUrl.'wysiwyg/user-default.jpg';
+		}
+	}
+ ?>
+<div class="col-sm-4">
+<div class="box-images"><img src="<?php echo $tab_profile; ?>"/></div>
+<!-- <h3><?php echo $businessDetail->getBusinessName(); ?></h3> -->
+<a href="javascript:void(0);" onclick="ViewBusiness('<?php echo $this->getBaseUrl(); ?>businesses/<?php echo $business->getBusinessPageUrl()?>','<?php echo $business->getBusinessPageUrl() ?>')"><h3><?php echo $businessDetail->getBusinessName(); ?></h3></a>
+
+
+<?php  $business->getBusinessPageUrl();  ?>
+<?php $business_id = $business->getId(); //die; 
+$businessTimeline->load($business_id, 'business_id');
+$length = strlen($businessTimeline->getCompanyDescription()); 
+if($length>40){
+$string = substr($businessTimeline->getCompanyDescription(),0,40).'...';
+}else{
+$string = $businessTimeline->getCompanyDescription();
+}
+?>
+<div class="business-desc"> <?php echo $string; ?></div>
+<?php
+$follow_id=$this->getCheckFollowBusiness($customerid, $business_id);
+ //$follow_id = $this->getCheckFollowBusiness($customerid, $business_id);
+?>
+
+<ul>
+  <?php if($follow_id != '0' || $follow_id != ''){?>
+<li><a class="follow-business-link" title="Follow" href="<?php echo $this->getBaseUrl(); ?>businesses/<?php echo $business->getBusinessPageUrl(); ?>/about/unfollow/" >Unfollow</a></li>
+<?php }else{ ?>
+
+<li><a class="follow-business-link" title="Follow" href="<?php echo $this->getBaseUrl(); ?>businesses/<?php echo $business->getBusinessPageUrl(); ?>/about/follow/" >Follow</a></li>
+<?php } ?>
+<li><a title="Offer" href="<?php echo ''.$this->getBaseUrl().'businesses/'.$business->getBusinessPageUrl().'/free-offers';?>">Offers</a></li>
+</ul>
+</div>
+
+<?php 
+$i = $i+1; } }?>
+</div>
+<input type="hidden" class="total_items" name="total_items" value="<?php echo count($allBusinesses); ?>">
+<input type="hidden" class="find_page_id" name="find_page_id" value="2">
+<button type="button" title="<?php /* @escapeNotVerified */ echo __('Load more') ?>" class="btn btn-border show-more">
+    	<span><?php /* @escapeNotVerified */ echo __('Load more') ?></span>
+</button>
+</form>
+</div>
+</div>
+</div>
+</div>
+</section>
+<?php echo $this->getLayout()->createBlock('Magento\Cms\Block\Block')->setBlockId('account-new-footer')->toHtml();?>
+<script type="text/javascript">
+	require(['jquery', 'jquery/ui'], function($){ 
+    	$(document).ready(function()
+    	{
+    		
+    		$(".show-more").click(function()
+    		{	
+                tmpCount = parseInt($(".find_page_id").val());
+                totalItmes = parseInt(Math.ceil($(".total_items").val()/3));
+                if(totalItmes<tmpCount){
+                    alert("No more results to display");
+                    return false;
+                }
+
+    			var i = $(".find_page_id").val();
+    			var ajax_url = '<?php echo $this->getBaseUrl(); ?>customers/find/business';
+    			var ajax_data = $("#find-business").serialize();
+    			$('.show-more').attr('disabled','disabled');
+    			$('.show-more').prepend("<i class='fa fa-spinner fa-spin fa-pulse'></i>");
+    			$.ajax(
+    			{
+    				url: ajax_url,
+    				data: ajax_data,
+    				type: 'POST',
+    				datatype: 'json',
+    				success:function(success)
+    				{
+
+    					$(".load-business-content").hide();
+    					$('.show-more').removeAttr('disabled');
+    					$('.show-more i').remove();
+                        
+                        //alert(data.count);
+                        $(".total_items").val(success.count);
+						$(".business-listings .row").append(success.ajaxitems);
+						var newVal = parseFloat(i) + 1;
+						$(".find_page_id").val(newVal);                        
+
+					},
+					
+    			});
+    		});
+    	}); 
+ 	});
+</script>
+
+
+<script type="text/javascript">
+	require(['jquery', 'jquery/ui'], function($){ 
+    	$(document).ready(function()
+    	{
+    		$(".find_business_prefer").change(function() {  
+    			$(".load-business-content").show();
+    			tmpCount = parseInt(1);
+                var i = 1;
+                $(".find_page_id").val(1);
+                var ajax_url = '<?php echo $this->getBaseUrl(); ?>customers/find/business';
+                var ajax_data = $("#find-business").serialize();
+    			$.ajax(
+    			{
+    				url: ajax_url,
+    				data: ajax_data,
+    				type: 'POST',
+    				datatype: 'json',
+    				success:function(success)
+    				{
+    					$(".load-business-content").hide();
+    					if(tmpCount=1){
+                            $(".total_items").val(success.count);
+                            $(".business-listings .row").html(success.ajaxitems);
+    					}else{
+    					    $(".total_items").val(success.count);
+                            $(".business-listings .row").append(success.ajaxitems);
+							//$(".business-listings .row").append(html);
+						}
+						var newVal = parseFloat(tmpCount) + 1;
+						$(".find_page_id").val(newVal);
+					},	
+    			});
+    		});
+    	}); 
+ 	});
+</script>
+
+
+<script type="text/javascript">
+    function ViewBusiness(businessUrl,businessNameUrl){
+    require([
+        'jquery',
+        'mage/mage'
+    ], function($){
+        $.cookie(businessNameUrl, 'organic_visit', {
+                path:'/',
+                expires: null
+            });
+        window.location = businessUrl;
+    });
+}
+</script>

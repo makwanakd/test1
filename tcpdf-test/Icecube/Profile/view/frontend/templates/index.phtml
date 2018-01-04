@@ -1,0 +1,667 @@
+<?php 
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$customerSession = $objectManager->create('Magento\Customer\Model\Session');
+$_storeManager = $objectManager->get('Magento\Store\Model\StoreManagerInterface'); 
+$currentStore = $_storeManager->getStore(); 
+$base_url = $objectManager->get('Magento\Store\Model\StoreManagerInterface')
+            ->getStore($currentStore)
+            ->getBaseUrl();
+
+if ($customerSession->isLoggedIn()) {
+    $customerId = $customerSession->getCustomerId();  // get Customer Id
+    $customerSession->getCustomerGroupId();
+    $customerSession->getCustomer();
+    $customerSession->getCustomerData(); 
+    $customerObj = $objectManager->create('Magento\Customer\Model\Customer')
+    ->load($customerId);
+  	//var_dump($customerObj->getData());
+    //die;
+}
+?>
+<?php
+$modelcollection = $objectManager->get('\Icecube\Businesses\Model\ResourceModel\Businesses\CollectionFactory')->create();
+$modelcollection->addFieldToFilter('businessuser_id' , $customerId);
+$businessData = $modelcollection->getFirstItem();
+$businessData->getId();
+
+
+?>
+<?php 
+$tagline = "";
+$MainWebsiteUrl = "";
+if($businessData->getId()){
+$businessTimeline = $objectManager->create('Icecube\Businesses\Model\Index');
+$businessTimeline->load($businessData->getId(), 'business_id');
+/*$businessTimeline->setData('tag_line',$tagline);
+$businessTimeline->setData('main_website_url',$businessWebsite);
+$businessTimeline->save();*/
+ $tagline = $businessTimeline->getTagLine();
+ $MainWebsiteUrl = $businessTimeline->getMainWebsiteUrl();
+ $companyDescription = $businessTimeline->getCompanyDescription();
+
+}
+?>
+   <?php
+            /*$countryHelper = $objectManager->get('Magento\Directory\Model\Config\Source\Country'); 
+            $countryFactory = $objectManager->get('Magento\Directory\Model\CountryFactory');
+            $countries = $countryHelper->toOptionArray(); //Load an array of countries
+                foreach ( $countries as $countryKey => $country ) {
+                    if ( $country['value'] == 'US' ) { //Ignore the first (empty) value         
+                        $stateArray = $countryFactory->create()->setId(
+                            $country['value']
+                        )->getLoadedRegionCollection()->toOptionArray(); //Get all regions for the given ISO country code
+                         foreach ( $stateArray as $stateKey => $state ) { ?>
+                          <option value=""><?php   echo $state['value']; ?></option> 
+                       <?php ;
+                         }
+                    }
+                }*/
+            ?>
+
+<?php //echo $block->getLayout()->createBlock('Magento\Cms\Block\Block')->setBlockId('account-header-new-two')->toHtml();?>
+<section class="admin_main_content">
+<div class="container">
+<div class="row">
+  <?php echo $this->getLayout()->createBlock("Icecube\Businesses\Block\Frontend\Index")->setTemplate("Icecube_Businesses::profile-settings-sidebar.phtml")->toHtml(); ?>
+  <?php //echo $block->getLayout()->createBlock('Magento\Cms\Block\Block')->setBlockId('account-left-sidebar-two')->toHtml();?>
+<div class="col-sm-9 pull-right">
+<div class="sign-up-form">
+	<form id="business-edit-form" data-hasrequired="<?php /* @escapeNotVerified */ echo __('* Required Fields') ?>" class="" action="<?php echo $block->getUrl().'profile/edit'?>" method="post" id="form-validate" data-mage-init='{"validation":{}}' enctype="multipart/form-data" autocomplete="off">
+
+    
+<div class="panel panel-default">
+<div class="panel-heading">
+<div class="pull-left">Contact Information</div>
+<!--<div class="pull-right">My grandmother knows the fields marked with * are required</div>--></div>
+
+<div class="panel-body">
+<div class="col-md-6">
+<div class="form-group"><label>First Name</label>
+<div class="select_group"><input class="form-control" type="text" value="<?php echo $customerObj->getFirstname(); ?>" name="business-fname" id="business-fname" data-validate='{"required":true}'/></div>
+</div>
+<div class="form-group"><label>Email Address</label>
+<div class="select_group"><input class="form-control" type="text" value="<?php echo $customerObj->getEmail(); ?>"id="business-email" name="business-email" data-validate='{"required":true,"email":true}' /></div>
+</div>
+<div class="form-group"><label>Business Name</label>
+<div class="select_group"><input class="form-control" type="text" readonly="" value="<?php echo $customerObj->getBusinessName(); ?>" id="business-name" name="business-name" data-validate='{"required":true}'/></div>
+</div>
+</div>
+<div class="col-md-6">
+<div class="form-group"><label>Last Name</label>
+<div class="select_group"><input class="form-control" type="text" value="<?php echo $customerObj->getLastname(); ?>" id="business-lname" data-validate='{required:true}' name="business-lname"/></div>
+</div>
+<div class="form-group"><label>Phone Number</label>
+<div class="select_group"><input class="form-control" type="text" value="<?php echo $customerObj->getBusinessPhoneNumberCheckout(); ?>" name="business-phonenumber" data-validate='{required:true}'/></div>
+</div>
+<?php $BusinessCat = $customerObj->getBusinessCategory(); 
+?>
+<?php
+$objectManager = Magento\Framework\App\ObjectManager::getInstance();
+$category = $objectManager->create('\Icecube\Extrafields\Model\Category\Types')->getAllOptions();
+?>
+<div class="form-group"><label>Business Category</label>
+<div class="select_group">
+	<select class="selectpicker" name="business-category" data-validate='{required:true}'>
+		<option value="">Make a selection</option>
+		<?php
+  		foreach($category as $c):
+    	$value = $c['value'];
+
+    	if($c['value'] != '0'): ?>
+		<option value="<?php echo $c['value']; ?>" <?php if($BusinessCat == $c['value']){ ?> selected="selected" <?php } ?>><?php echo $c['label']; ?></option>
+		 <?php endif;
+  		endforeach;
+		?>
+	</select>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+
+
+<div class="panel panel-default">
+<div class="panel-heading">
+<div class="pull-left">Business Profile Information</div>
+<!--<div class="pull-right">My grandmother knows the fields marked with * are required</div>--></div>
+
+<div class="panel-body">
+<div class="col-md-6">
+<div class="form-group"><label>Business Tagline</label>
+<div class="select_group"><input class="form-control" type="text" value="<?php if($tagline){ echo $tagline; } ?>" name="tag-line" id="tag-line" data-validate='{"required":true}'/></div>
+</div>
+</div>
+<div class="col-md-6">
+<div class="form-group"><label class="remove-astrisk">Main Website URL</label>
+<div class="select_group"><input class="form-control validate-url" type="text" value="<?php if($MainWebsiteUrl){ echo $MainWebsiteUrl; } ?>" id="main-wedsite-url" name="main-wedsite-url"/></div>
+</div>
+</div>
+
+
+
+<div class="col-md-12">
+<div class="form-group"><label>Brief Company Description</label>
+<div class="select_group"><!-- <input class="form-control" type="text" value="<?php //echo $customerObj->getFirstname(); ?>" name="business-fname" id="business-fname" data-validate='{"required":true}'/> -->
+<textarea class="form-control" rows="4"  name="company-description" id="company-description" data-validate='{"required":true}'><?php if($companyDescription){ echo $companyDescription; } ?></textarea>
+
+</div>
+</div>
+
+</div>
+
+
+</div>
+</div>
+
+
+
+
+
+
+
+<?php
+//$billingID =  $customerObj->getDefaultBilling();
+//$address = $objectManager->create('Magento\Customer\Model\Address')->load($billingID);
+//echo "<pre>";print_r($address->getData()); 
+/*foreach ($customerObj->getAddresses() as $addresses) {    
+	echo $addresses['street']; 
+}*/
+
+?>
+<?php //var_dump($customerObj->getAddress()); die; ?>
+<!-- <input type="hidden" class="total-customer-address" name="total-customer-address" value=""> -->
+<div class="panel panel-default">
+<div class="panel-heading">
+<div class="pull-left">Address Information</div>
+</div>
+<div class="panel-body">
+<div class="shippment_address location-information-content">
+	<?php 
+	$i = 1;
+  $j = 1;
+  $sum = 0;
+	foreach ($customerObj->getAddresses() as $addresses) {   
+    //var_dump($addresses->getData()); die;
+
+?>
+
+<div class="new-location-form">
+  <input type="hidden" id="total-customer-address<?php if($j>=2){echo $j; }?>" name="total-customer-address<?php if($j>=2){echo $j; }?>"  value="<?php echo $addresses->getId();  ?>">
+  <div class="col-md-12">
+    <h3 class="shippment_address_title">Location #<?php echo $i; ?></h3>
+  </div>
+  <div class="row">
+  <div class="col-md-12">
+    <div class="col-md-6">
+      <div class="form-group"><label>Location Name</label>
+        <div class="select_group"><input class="form-control" type="text" value="<?php echo $addresses['location_name']; ?>" name="business-location-name<?php if($j>=2){echo $j; }?>" data-validate='{required:true}'/>
+        </div>  
+      </div>
+    </div>
+<?php $street = $addresses['street']; 
+$arr = explode("\n", $street);
+
+      $street1 = '';
+      $street2 = '';
+      if(isset($arr['0'])){
+        $street1 = $arr['0'];
+      }
+      if(isset($arr['1'])){
+        $street2 = $arr['1']; 
+      }	
+?>
+  <div class="col-md-6">
+    <div class="form-group"><label>Address #1 </label>
+      <div class="select_group"><input class="form-control" type="text" value="<?php echo $street1; ?>" name="business-street-address-1<?php if($j>=2){echo $j; }?>" data-validate='{required:true}'/>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+  <div class="col-md-6">
+    <div class="form-group"><label class="remove-astrisk">Address #2 </label>
+      <div class="select_group"><input class="form-control" type="text" value="<?php echo $street2; ?>" name="business-street-address-2<?php if($j>=2){echo $j; }?>"/>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="form-group"><label>City </label>
+      <div class="select_group"><input class="form-control" type="text" value="<?php echo $addresses['city']; ?>" name="business-city<?php if($j>=2){echo $j; }?>" data-validate='{required:true}'/>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<?php  $addresses['region_id'];  ?>
+<div class="row">
+<div class="col-md-12">
+  <div class="col-md-6">
+    <div class="form-group"><label>State </label>
+      <div class="select_group">
+        <select id="region_id<?php if($j>=2){echo $j; }?>" title="<?php echo __('State') ?>" class="validate-select selectpicker region_id_disabled" name="business-state<?php if($j>=2){echo $j; }?>" data-validate='{required:true}'>
+          <option value=""><?php /* @escapeNotVerified */ echo __('Make a selection') ?></option>
+
+          <?php
+            $countryHelper = $objectManager->get('Magento\Directory\Model\Config\Source\Country'); 
+            $countryFactory = $objectManager->get('Magento\Directory\Model\CountryFactory');
+            $countries = $countryHelper->toOptionArray(); //Load an array of countries
+                foreach ( $countries as $countryKey => $country ) {
+                    if ( $country['value'] == 'US' ) { //Ignore the first (empty) value         
+                        $stateArray = $countryFactory->create()->setId(
+                            $country['value']
+                        )->getLoadedRegionCollection()->toOptionArray(); //Get all regions for the given ISO country code
+                         foreach ( $stateArray as $stateKey => $state ) { ?>
+                          <option <?php if($state['value'] == $addresses['region_id']){ ?> selected="selected" <?php } ?> value="<?php   echo $state['value']; ?>"><?php   echo $state['label']; ?></option> 
+                       <?php ;
+                         }
+                    }
+                }
+            ?>
+        </select>
+        <input type="text" id="region" name="region" value="<?php echo $block->escapeHtml($block->getRegion()) ?>" title="<?php /* @escapeNotVerified */ echo __('State of Residence') ?>" class="input-text <?php  echo $this->helper('Magento\Customer\Helper\Address')->getAttributeValidationClass('region') ?>" style="display:none;">
+        <div style="display: none;">
+          <select name="country_id<?php if($j>=2){echo $j; }?>" id="country<?php if($j>=2){echo $j; }?>" class="required-entry" title="Country" data-validate="{'validate-select':true}" autocomplete="off"><option value=""> </option>
+            <option value="US" selected="selected">United States</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="form-group"><label>Zip Code </label>
+      <div class="select_group"><input class="form-control" type="text" value="<?php echo $addresses['postcode']; ?>" name="business-pincode<?php if($j>=2){echo $j; }?>" data-validate='{required:true}' name="postcode<?php if($j>=2){echo $j; }?>" id="postcode<?php if($j>=2){echo $j; }?>" />
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+  <div class="col-md-6">
+    <div class="form-group"><label>Phone Number </label>
+      <div class="select_group"><input class="form-control validate-phoneStrictCustom business-location-phonenumber" type="text" value="<?php echo $addresses['telephone']; ?>"
+    	name="business-location-phonenumber<?php if($j>=2){echo $j; }?>" data-validate='{required:true}'/>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6"> 
+    <div class="form-group"><label class="remove-astrisk">Website </label>
+      <div class="select_group"><input class="form-control validate-url" type="text" name="business-website<?php if($j>=2){echo $j; }?>" value="<?php echo $addresses['website_name']; ?>"/>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+<input type="hidden" class="sum-hidden" value="0">
+
+<?php $i = $i+1; $j = $j+1; $sum = $sum+1; ?>
+<?php  } ?>
+<div class="col-md-12 text-center add-additional-location-main">
+                              <div class="form-group"><a class="add-additional-location" href="javascript:void(0)">+ Add Additional Location</a></div>
+                           </div>
+</div>
+
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<div class="pull-left">Password Information</div>
+<!--<div class="pull-right">My grandfather always completes the fields marked with *</div>--></div>
+<div class="panel-body">
+<div class="col-md-6">
+<div class="form-group"><label>Password</label>
+<div class="select_group"><!-- <input class="form-control" type="password" /> -->
+<input type="password" name="password" id="password" title="Password" class="input-text form-control" data-password-min-length="8" data-password-min-character-sets="3"  autocomplete="off">
+</div>
+</div>
+</div>
+<div class="col-md-6">
+<div class="form-group"><label>Repeat Password</label>
+<div class="select_group"><!-- <input class="form-control" type="password" /> -->
+<input type="password" name="password_confirmation" title="Confirm Password" id="password-confirmation" class="input-text form-control" data-validate="{equalTo:'#password'}" autocomplete="off">
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<button class="btn btn-border">Update Settings</button></div>
+</form>
+</div>
+</div>
+</div>
+</section>
+<?php echo $block->getLayout()->createBlock('Magento\Cms\Block\Block')->setBlockId('account-new-footer')->toHtml();?>
+ <?php
+$zipcodeobjectManager = Magento\Framework\App\ObjectManager::getInstance();
+$zipcodes = $zipcodeobjectManager->create('\Icecube\Extrafields\Model\Zipcode')->getAllOptions();
+$zipcodesFinal = array();
+foreach($zipcodes as $c):
+  if($c['zip_code'] != '0'){
+    $zipcodesFinal[] = $c['zip_code'];
+  }
+endforeach;
+?>
+
+
+<script type="text/javascript" xml="space">
+//alert(js_array);
+var js_array = [<?php echo '"'.implode('","', $zipcodesFinal).'"'; ?>];
+require([
+    'jquery'
+], function ($) {
+var len = $(".new-location-form").length;
+/*$(".total-customer-address").val(len);*/
+var sum = <?php echo $sum; ?>;
+var c_new = "";
+$(".add-additional-location").click(function () { 
+	
+var contentdata= "";
+contentdata= '<div class="location-detail-form"> <input type="hidden" id="total-customer-address" name="total-customer-address" value="test" autocomplete="off"> <div class="col-md-12"> <h3 class="shippment_address_title">Location #1</h3> </div> <div class="row"> <div class="col-md-12"> <div class="col-md-6"> <div class="form-group"> <label>Location Name</label> <div class="select_group"><input class="form-control business-location-name" name="business-location-name" type="text" data-validate="{required:true}" autocomplete="off"></div> </div> </div> <div class="col-md-6"> <div class="form-group"> <label>Address #1</label> <div class="select_group"><input class="form-control business-street-address-1" name="business-street-address-1" data-validate="{required:true}" type="text" autocomplete="off"></div> </div> </div> </div> </div> <div class="row"> <div class="col-md-12"> <div class="col-md-6"> <div class="form-group"> <label class="remove-astrisk">Address #2</label> <div class="select_group"><input class="form-control business-street-address-2" name="business-street-address-2"  type="text" autocomplete="off"></div> </div> </div> <div class="col-md-6"> <div class="form-group"> <label>City</label> <div class="select_group"><input class="form-control business-city" name="business-city" type="text" data-validate="{required:true}" autocomplete="off"></div> </div> </div> </div> </div> <div class="row"> <div class="col-md-12"> <div class="col-md-6"> <div class="form-group"> <label>State</label> <div class="select_group"> <select class="selectpicker business-state" name="business-state" id="region_id" data-validate="{required:true}" autocomplete="off"> <option value="">Make a selection</option> <option data-title="Alabama" value="1">Alabama</option><option data-title="Alaska" value="2">Alaska</option><option data-title="Arizona" value="4">Arizona</option><option data-title="Arkansas" value="5">Arkansas</option><option data-title="California" value="12">California</option><option data-title="Colorado" value="13">Colorado</option><option data-title="Connecticut" value="14">Connecticut</option><option data-title="Delaware" value="15">Delaware</option><option data-title="Florida" value="18">Florida</option><option data-title="Georgia" value="19">Georgia</option><option data-title="Hawaii" value="21">Hawaii</option><option data-title="Idaho" value="22">Idaho</option><option data-title="Illinois" value="23">Illinois</option><option data-title="Indiana" value="24">Indiana</option><option data-title="Iowa" value="25">Iowa</option><option data-title="Kansas" value="26">Kansas</option><option data-title="Kentucky" value="27">Kentucky</option><option data-title="Louisiana" value="28">Louisiana</option><option data-title="Maine" value="29">Maine</option><option data-title="Maryland" value="31">Maryland</option><option data-title="Massachusetts" value="32">Massachusetts</option><option data-title="Michigan" value="33">Michigan</option><option data-title="Minnesota" value="34">Minnesota</option><option data-title="Mississippi" value="35">Mississippi</option><option data-title="Missouri" value="36">Missouri</option><option data-title="Montana" value="37">Montana</option><option data-title="Nebraska" value="38">Nebraska</option><option data-title="Nevada" value="39">Nevada</option><option data-title="New Hampshire" value="40">New Hampshire</option><option data-title="New Jersey" value="41">New Jersey</option><option data-title="New Mexico" value="42">New Mexico</option><option data-title="New York" value="43">New York</option><option data-title="North Carolina" value="44">North Carolina</option><option data-title="North Dakota" value="45">North Dakota</option><option data-title="Ohio" value="47">Ohio</option><option data-title="Oklahoma" value="48">Oklahoma</option><option data-title="Oregon" value="49">Oregon</option><option data-title="Pennsylvania" value="51">Pennsylvania</option><option data-title="Rhode Island" value="53">Rhode Island</option><option data-title="South Carolina" value="54">South Carolina</option><option data-title="South Dakota" value="55">South Dakota</option><option data-title="Tennessee" value="56">Tennessee</option><option data-title="Texas" value="57">Texas</option><option data-title="Utah" value="58">Utah</option><option data-title="Vermont" value="59">Vermont</option><option data-title="Virginia" value="61">Virginia</option><option data-title="Washington" value="62">Washington</option><option data-title="West Virginia" value="63">West Virginia</option><option data-title="Wisconsin" value="64">Wisconsin</option><option data-title="Wyoming" value="65">Wyoming</option> </select> </div> </div> <div style="display: none;"> <select name="country_id" id="country" class="required-entry" title="Country" data-validate="{required:true}" autocomplete="off"><option value=""> </option> <option value="US" selected="selected">United States</option> </select> </div> </div> <div class="col-md-6"> <div class="form-group"> <label>Zip Code</label> <div class="select_group"><input class="form-control business-pincode" name="business-pincode" data-validate="{required:true}" type="text" id="postcode" autocomplete="off"></div> </div> </div> </div> </div> <div class="row"> <div class="col-md-12"> <div class="col-md-6"> <div class="form-group"> <label>Phone Number</label> <div class="select_group"><input class="form-control validate-phoneStrictCustom business-location-phonenumber" name="business-location-phonenumber" data-validate="{required:true}" type="text" autocomplete="off"></div> </div> </div> <div class="col-md-6"> <div class="form-group"> <label class="remove-astrisk">Website</label> <div class="select_group"><input class="form-control business-website validate-url" name="business-website" type="text" autocomplete="off"></div> </div> </div> </div> </div> </div> </div>';
+//alert(contentdata);
+var len = $(".new-location-form").length;
+if(len < 3) {
+	if(len == 0)
+	{
+	         var v = 1;
+	         var x = 2;
+	         sum++;
+	         c_new = contentdata.replace('Location #'+v+' Name', 'Location #'+x+' Name')
+	         name = 'business-location-name'+sum;
+	         street1 = 'business-street-address-1'+sum;
+	         street2 = 'business-street-address-2'+sum;
+	         city = 'business-city'+sum;
+	         state = 'business-state'+sum;
+            stateid = 'region_id'+sum;
+	         pin = 'business-pincode'+sum;
+            pinid = 'postcode'+sum;
+            daddress = 'total-customer-address'+sum; 
+            countryid = 'country'+sum; 
+            countryname = 'country_id'+sum; 
+
+
+            website = 'business-website'+sum;
+	         phone = 'business-location-phonenumber'+sum;
+	         c_new = c_new.replace('name="business-location-name"', 'name="'+name+'"');
+	         c_new = c_new.replace('name="business-street-address-1"', 'name="'+street1+'"');
+	         c_new = c_new.replace('name="business-street-address-2"', 'name="'+street2+'"');
+	         c_new = c_new.replace('name="business-city"', 'name="'+city+'"');
+	         c_new = c_new.replace('name="business-state"', 'name="'+state+'"');
+            c_new = c_new.replace('id="region_id"', 'id="'+stateid+'"');
+	         c_new = c_new.replace('name="business-pincode"', 'name="'+pin+'"');
+             c_new = c_new.replace('name="business-website"', 'name="'+website+'"');
+	         c_new = c_new.replace('name="business-location-phonenumber"', 'name="'+phone+'"');
+           c_new = c_new.replace('id="postcode"', 'id="'+pinid+'"');
+            c_new = c_new.replace('id="country"', 'id="'+countryid+'"');
+            c_new = c_new.replace('name="country_id"', 'name="'+countryname+'"');
+            c_new = c_new.replace('id="total-customer-address"', 'id="'+daddress+'"');
+
+	}
+	if(len > 0)
+	{
+	         sum++;
+	         c_new = contentdata.replace('Location #1', 'Location #'+sum+'');
+	         name = 'business-location-name'+sum;
+	         street1 = 'business-street-address-1'+sum;
+	         street2 = 'business-street-address-2'+sum;
+	         city = 'business-city'+sum;
+	         state = 'business-state'+sum;
+            stateid = 'region_id'+sum;
+	         pin = 'business-pincode'+sum;
+            pinid = 'postcode'+sum;
+            daddress = 'total-customer-address'+sum;
+            website = 'business-website'+sum;
+            countryid = 'country'+sum;
+            countryname = 'country_id'+sum; 
+	         phone = 'business-location-phonenumber'+sum;
+	         c_new = c_new.replace('name="business-location-name"', 'name="'+name+'"');
+	         c_new = c_new.replace('name="business-street-address-1"', 'name="'+street1+'"');
+	         c_new = c_new.replace('name="business-street-address-2"', 'name="'+street2+'"');
+	         c_new = c_new.replace('name="business-city"', 'name="'+city+'"');
+	         c_new = c_new.replace('name="business-state"', 'name="'+state+'"');
+             c_new = c_new.replace('id="region_id"', 'id="'+stateid+'"');
+	         c_new = c_new.replace('name="business-pincode"', 'name="'+pin+'"');
+            c_new = c_new.replace('name="business-website"', 'name="'+website+'"');
+	         c_new = c_new.replace('name="business-location-phonenumber"', 'name="'+phone+'"');
+            c_new = c_new.replace('id="postcode"', 'id="'+pinid+'"');
+            c_new = c_new.replace('id="country"', 'id="'+countryid+'"');
+            c_new = c_new.replace('name="country_id"', 'name="'+countryname+'"');
+            c_new = c_new.replace('name="total-customer-address"', 'name="'+daddress+'"');
+	}
+	//alert(c_new2);
+	$( ".location-information-content .add-additional-location-main" ).before("<div class='new-location-form'>"+c_new+"</div>");
+var len = $(".new-location-form").length;
+/*$(".total-customer-address").val(len);*/
+
+   $(".sum-hidden").val(sum);
+}
+//var len = $(".new-location-form").length;
+/*$(".total-customer-address").val(len);*/
+}); 
+}); 
+</script>
+<script type="text/javascript">
+require([
+    'jquery'
+], function ($) {
+  $("#region_id").change(function(){
+    if($(this).val()!='51'){
+      $(".btn-pennsylvania-popup").trigger("click");
+     }
+  })          
+  $("#postcode").blur(function(){
+    if(js_array.indexOf($("#postcode").val()) > -1){
+    //alert(js_array.indexOf($(this).val()) > -1);
+    //$(".btn-pennsylvania-popup").trigger("click");
+    }else{
+    //alert("i am here");
+    if($("#postcode").val()!='' && $("#postcode").val()!=null){
+      $(".btn-pennsylvania-popup").trigger("click");
+     }
+  }
+});
+         
+$('body').on('blur','#postcode2',function(){
+    if(js_array.indexOf($("#postcode2").val()) > -1){
+        }else{
+           if($("#postcode2").val()!='' && $("#postcode2").val()!=null){
+           $(".btn-pennsylvania-popup").trigger("click");
+           }
+        }
+});
+          
+$('body').on('blur','#postcode3',function(){
+    if(js_array.indexOf($("#postcode3").val()) > -1){
+        }else{
+           if($("#postcode3").val()!='' && $("#postcode3").val()!=null){
+           $(".btn-pennsylvania-popup").trigger("click");
+           }
+        }
+});
+   
+$('body').on('change','#region_id2',function(){
+       if($(this).val()!='51'){
+          $(".btn-pennsylvania-popup").trigger("click");
+       }
+ })
+
+$('body').on('change','#region_id3',function(){
+  if($(this).val()!='51'){
+     $(".btn-pennsylvania-popup").trigger("click");
+  }
+})
+
+
+
+$("#business-edit-form").on('submit',function()
+  {
+      var sum = $(".sum-hidden").val();
+    /*$('.business-location-name').validation();*/
+        /*if(!$('.business-location-name').validation('isValid')){
+           return false;
+        }*/
+        if(sum==0){
+      
+         if($("#region_id").val()!='51'){
+           // alert("not equal");
+            $(".btn-pennsylvania-popup").trigger("click");
+           return false;
+         } 
+         //alert(js_array.indexOf($("#postcode").val()));
+         
+            if(js_array.indexOf($("#postcode").val()) > -1){
+                  //return true;
+               
+               }else{
+                  
+               if($("#postcode").val()!='' && $("#postcode").val()!=null){
+                //alert("elseif condition");
+               $(".btn-pennsylvania-popup").trigger("click");
+               return false;
+               }
+            }
+               
+
+      }
+
+      else if(sum==2){
+
+          if($("#region_id").val()!='51'){
+            $(".btn-pennsylvania-popup").trigger("click");
+           return false;
+         }  
+         if($("#region_id2").val()!='51'){
+           $(".btn-pennsylvania-popup").trigger("click");
+           return false;
+         }
+         
+         if(js_array.indexOf($("#postcode").val()) > -1){
+          
+            }else{
+            if($("#postcode").val()!='' && $("#postcode").val()!=null){           
+            $(".btn-pennsylvania-popup").trigger("click");
+             return false;
+            }
+         }
+        
+         if(js_array.indexOf($("#postcode2").val()) > -1){
+            
+            }else{
+            if($("#postcode2").val()!='' && $("#postcode2").val()!=null){ 
+            $(".btn-pennsylvania-popup").trigger("click");
+             return false;
+            }
+         }
+      }
+     else if(sum==3){
+      if($("#region_id").val()!='51'){
+            $(".btn-pennsylvania-popup").trigger("click");
+           return false;
+         }  
+         if($("#region_id2").val()!='51'){
+            $(".btn-pennsylvania-popup").trigger("click");
+           return false;
+         }  
+         if($("#region_id3").val()!='51'){
+            $(".btn-pennsylvania-popup").trigger("click");
+           return false;
+         }  
+         
+         if(js_array.indexOf($("#postcode").val()) > -1){
+         
+            }else{
+            if($("#postcode").val()!='' && $("#postcode").val()!=null){
+            $(".btn-pennsylvania-popup").trigger("click");
+             return false;
+            }
+         }
+     
+      
+         if(js_array.indexOf($("#postcode2").val()) > -1){
+            
+            }else{
+            if($("#postcode2").val()!='' && $("#postcode2").val()!=null){
+            $(".btn-pennsylvania-popup").trigger("click");
+             return false;
+            }
+         }
+      
+      
+         if(js_array.indexOf($("#postcode3").val()) > -1){
+            
+            }else{
+            if($("#postcode3").val()!='' && $("#postcode3").val()!=null){
+            $(".btn-pennsylvania-popup").trigger("click");
+             return false;
+            }
+         }
+      }  
+
+      if ($('#business-edit-form').valid()) {
+        return true;
+      }else{
+        return false;
+      }
+
+    });
+});
+      </script>
+
+
+
+<a title="Pennsylvania" href="javascript:void(0);" type="button" class="btn-pennsylvania-popup" data-toggle="modal" data-target="#pennsylvania-popup" style="display: none;">Pennsylvania</a>
+<div id="pennsylvania-popup" class="modal fade">
+<div class="modal-dialog">
+<div class="modal-header">
+<div class="pull-left">{Ad/Offer Title}</div>
+<div class="pull-right"><button class="close" type="button" data-dismiss="modal"><i class="fa fa-times fa-2x">&nbsp;</i></button></div>
+</div>
+<div class="modal-content">
+<div class="pennsylvania-content">
+  <form class=""
+      action="<?php echo $base_url.'contact/index/pennsylvaniasubmit'; ?>"
+      id="pnpopup"
+      method="post"
+      data-hasrequired="<?php /* @escapeNotVerified */ echo __('* Required Fields') ?>"
+      data-mage-init='{"validation":{}}' >
+<h2>freeboxes is only available to Businesses in Pittsburgh, PA</h2>
+<p>At the moment, freeboxes is only available to Businesses within the Greater Pittsburgh region. Please join our mailing list and we’ll notify you when freeboxes is available in your area.</p>
+<div class="form-group">
+<div class="select_group"><input class="form-control" autocomplete="off" type="text" placeholder="First Name *" name="pnpopupfname" data-validate="{required:true}"/></div>
+</div>
+<div class="form-group">
+<div class="select_group"><input class="form-control" autocomplete="off" type="text" placeholder="Last Name *" name="pnpopuplname" data-validate="{required:true}"/></div>
+</div>
+<div class="form-group">
+<div class="select_group"><input class="form-control" autocomplete="off" type="email" placeholder="Email Address *" name="pnpopupemail" data-validate="{required:true}"/></div>
+</div>
+<div class="form-group">
+<div class="select_group"><input class="form-control validate-phoneStrictCustom" autocomplete="off" type="text" placeholder="Phone Number" name="pnpopupphone" data-validate="{required:true}"/></div>
+</div>
+<div class="form-group">
+<div class="select_group"><input class="form-control" autocomplete="off" type="text" placeholder="City *" name="pnpopupcity" data-validate="{required:true}"/></div>
+</div>
+<div class="form-group">
+<div class="select_group">
+  <select name="region_id_pennsylvania" title="State/Province" class="form-control validate-select selectpicker required-entry" autocomplete="off" defaultvalue="" data-validate="{required:true}">
+    <option value="">State*</option>
+<option value="1">Alabama</option><option value="2">Alaska</option><option value="4">Arizona</option><option value="5">Arkansas</option><option value="12">California</option><option value="13">Colorado</option><option value="14">Connecticut</option><option value="15">Delaware</option><option value="18">Florida</option><option value="19">Georgia</option><option value="21">Hawaii</option><option value="22">Idaho</option><option value="23">Illinois</option><option value="24">Indiana</option><option value="25">Iowa</option><option value="26">Kansas</option><option value="27">Kentucky</option><option value="28">Louisiana</option><option value="29">Maine</option><option value="31">Maryland</option><option value="32">Massachusetts</option><option value="33">Michigan</option><option value="34">Minnesota</option><option value="35">Mississippi</option><option value="36">Missouri</option><option value="37">Montana</option><option value="38">Nebraska</option><option value="39">Nevada</option><option value="40">New Hampshire</option><option value="41">New Jersey</option><option value="42">New Mexico</option><option value="43">New York</option><option value="44">North Carolina</option><option value="45">North Dakota</option><option value="47">Ohio</option><option value="48">Oklahoma</option><option value="49">Oregon</option><option value="51">Pennsylvania</option><option value="53">Rhode Island</option><option value="54">South Carolina</option><option value="55">South Dakota</option><option value="56">Tennessee</option><option value="57">Texas</option><option value="58">Utah</option><option value="59">Vermont</option><option value="61">Virginia</option><option value="62">Washington</option><option value="63">West Virginia</option><option value="64">Wisconsin</option><option value="65">Wyoming</option></select>
+</div>
+</div>
+<div class="form-group">
+<div class="select_group"><input class="form-control" autocomplete="off" type="text" placeholder="Zip Code *" name="pnpopupzip" data-validate="{required:true}"/></div>
+</div>
+<!-- <div class="btn sign_btn sign_up_btn_action"><a title="Get Started" href="#">Submit</a></div> -->
+<div class="btn sign_btn sign_up_btn_action">
+<input type="submit" title="Get Started" value="Submit" id="pnpopupsubmit" />
+</div>
+</form>
+</div>
+</div>
+</div>
+</div>

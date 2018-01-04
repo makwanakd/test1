@@ -1,0 +1,37 @@
+<?php
+
+namespace Icecube\Extrafields\Model;
+
+use Magento\Customer\Api\GroupManagementInterface;
+
+class Preferences extends \Magento\Eav\Model\Entity\Attribute\Source\Table
+{
+    protected $_groupManagement;
+
+    protected $_converter;
+
+    public function __construct(
+        \Magento\Eav\Model\ResourceModel\Entity\Attribute\Option\CollectionFactory $attrOptionCollectionFactory,
+        \Magento\Eav\Model\ResourceModel\Entity\Attribute\OptionFactory $attrOptionFactory,
+        GroupManagementInterface $groupManagement,
+        \Magento\Framework\Convert\DataObject $converter
+    ) {
+        $this->_groupManagement = $groupManagement;
+        $this->_converter = $converter;
+        parent::__construct($attrOptionCollectionFactory, $attrOptionFactory);
+    }
+
+    public function getPreferences($id)
+    {
+
+    		$resources = \Magento\Framework\App\ObjectManager::getInstance()->get('Magento\Framework\App\ResourceConnection');
+			$connection = $resources->getConnection();
+			//$themeTable = $resources->getTableName('mgsh_customer_preferences');
+			//$sql = "SELECT * FROM ".$themeTable;	
+            $sql = "Select * FROM mgsh_customer_preferences where customer_id='$id'";		
+			$connection->query($sql);
+			$rows = $connection->fetchAll($sql);			
+	        $this->_options = $rows;
+        	return $this->_options;
+    }
+}

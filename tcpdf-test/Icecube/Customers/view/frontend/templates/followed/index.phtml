@@ -1,0 +1,90 @@
+<?php 
+//$this->getAllBusinesses();
+$mediaUrl = $this->getMediaUrl();
+?>
+<?php $allBusinesses = $this->getAllFollowedBusinesses(); 
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance(); 
+$customerSession = $objectManager->get('Magento\Customer\Model\Session');
+if($customerSession->isLoggedIn()) {
+  $customer = $customerSession->getCustomer(); 
+  $customerid = $customer->getId(); 
+}
+?>
+<section class="admin_main_content">
+<div class="container">
+<div class="row">
+
+  <?php echo $this->getLayout()->createBlock('Magento\Cms\Block\Block')->setBlockId('account-left-sidebar-one')->toHtml();?>
+
+<div class="col-sm-9 pull-right">
+<div class="boxes_content business-listings">
+<div class="row">
+<?php foreach($allBusinesses as $business){ ?>
+<?php $businessDetail = $this->getCustomerDetails($business->getBusinessuserId());
+
+	$tab_profile = $mediaUrl.'wysiwyg/user-default.jpg';
+	if($businessDetail->getId()){
+		$isimageAvailable = $businessDetail->getProfileImage();
+		if($isimageAvailable!=NULL && $isimageAvailable!=''){
+			$tab_profile = $mediaUrl.$isimageAvailable;			
+		}else{
+			$tab_profile = $mediaUrl.'wysiwyg/user-default.jpg';
+		}
+	}
+ ?>
+<div class="col-sm-4">
+<div class="box-images"><img src="<?php echo $tab_profile; ?>"/></div>
+<!-- <h3><?php echo $businessDetail->getBusinessName(); ?></h3> -->
+<a href="javascript:void(0);" onclick="ViewBusiness('<?php echo $this->getBaseUrl(); ?>businesses/<?php echo $business->getBusinessPageUrl()?>','<?php echo $business->getBusinessPageUrl() ?>')"><h3><?php echo $businessDetail->getBusinessName(); ?></h3></a>
+<?php
+  $id = $business->getId();
+   $checkFollow = $this->getCheckFollowBusiness($customerid,$id); 
+?>
+<ul>
+<li><a class="follow-business-link" title="Follow" href="<?php echo $this->getBaseUrl(); ?>businesses/<?php echo $business->getBusinessPageUrl(); ?>/about/unfollow/">Unfollow</a></li>
+<li><a title="Offers" href="<?php echo ''.$this->getBaseUrl().'businesses/'.$business->getBusinessPageUrl().'/free-offers';?>">Offers</a></li>
+</ul>
+</div>
+<?php } ?>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- <p>{{block class="Magento\Cms\Block\Block" block_id=""}}</p> -->
+<?php echo $this->getLayout()->createBlock('Magento\Cms\Block\Block')->setBlockId('account-new-footer')->toHtml();?>
+<script type="text/javascript" xml="space">// <![CDATA[
+// 
+// 
+ require(['jquery', 'jquery/ui'], function($){ 
+    $(".follow-link").click(function() {
+    if ($(this).text() == "Follow" && $(this).attr('title') == "Follow")
+    {
+       $(this).text("Unfollow");
+       $(this).attr('title','Unfollow');
+    }
+    else
+    {
+       $(this).text("Follow");
+       $(this).attr('title','Follow');
+    }
+});
+});
+// 
+// 
+// ]]></script>
+<script type="text/javascript">
+    function ViewBusiness(businessUrl,businessNameUrl){
+    require([
+        'jquery',
+        'mage/mage'
+    ], function($){
+        $.cookie(businessNameUrl, 'organic_visit', {
+                path:'/',
+                expires: null
+            });
+        window.location = businessUrl;
+    });
+}
+</script>

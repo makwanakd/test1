@@ -1,0 +1,87 @@
+<?php
+namespace Icecube\Settings\Controller\Account;
+class EditCustomer extends \Magento\Customer\Controller\AbstractAccount
+{
+    protected $customerRepositoryInterface;
+    protected $customerSession;
+    protected $request;
+    protected $addressRepository;
+
+       public function __construct(
+        \Magento\Framework\App\Action\Context $context,
+        \Magento\Framework\View\Result\PageFactory $resultPageFactory,
+        \Magento\Customer\Api\CustomerRepositoryInterface $customerRepositoryInterface,
+        \Magento\Customer\Model\Session $customerSession,
+        /*\Magento\Framework\App\Request\Http $request*/
+        \Magento\Customer\Api\AddressRepositoryInterface $addressRepository
+      ) {
+        parent::__construct($context);
+        $this->resultPageFactory = $resultPageFactory;
+        $this->CustomerRepositoryInterface = $customerRepositoryInterface;
+        $this->Session = $customerSession;
+        $this->addressRepository = $addressRepository;
+         //$this->request = $request;
+      }
+    public function execute()
+    {
+       $street = array();
+        //echo "one";
+        //print_r($_POST);die;
+        $customerId = $this->Session->getCustomer()->getId();
+        $resultRedirect = $this->resultRedirectFactory->create();
+        $request = $this->getRequest()->getParams();           
+           $firstname = $request['firstname']; 
+           $lastname = $request['lastname']; 
+           $email = $request['email']; 
+           $telephone = $request['telephone']; 
+           $dobmonth = $request['dobmonth']; 
+           $dobday = $request['dobday']; 
+           $dobyear = $request['dobyear']; 
+           $business_survey = $request['business_survey']; 
+           //$street = $request['street'];
+           $gender = $request['gender']; 
+           $pnpopupcity = $request['pnpopupcity']; 
+           $postcode = $request['postcode'];
+           $region_id = $request['region_id']; 
+           $date = ($dobmonth.'/'.$dobday.'/'.$dobyear);
+          
+            //echo $date; die; 
+      
+        $this->resultPageFactory->create();
+        
+        if ($customerId) {
+             $customer = $this->CustomerRepositoryInterface->getById($customerId);
+            $customer->setFirstname($firstname);
+            $customer->setLastname($lastname);
+            $customer->setEmail($email);
+            //$customer->setTelephone($telephone);
+            $customer->setDob($date);
+            //$customer->setBusinessSurvey($business_survey);
+            $customer->setGender($gender);
+            //$customer->setPnpopupcity($pnpopupcity);
+            //$customer->setPostcode($postcode);
+            //$customer->setRegion_id($region_id);
+
+            $this->CustomerRepositoryInterface->save($customer);
+
+            $billingAddressId = $customer->getDefaultBilling();
+            //$shippingAddressId = $customer->getDefaultShipping(); die;
+             $address = $this->addressRepository->getById($billingAddressId);
+             $address->setTelephone($telephone);
+             $address->setPostcode($postcode);
+             $address->setCity($pnpopupcity);
+             $address->setRegionId($region_id);
+            // $address->setStreet($street);         
+            $this->addressRepository->save($address);
+           //$addresses = $customer->setAddresses(); //echo"<pre>"; print_r($addresses); die;
+            
+
+        }
+        $this->messageManager->addSuccess( __('Your membership successfully updated.') );
+        //$resultRedirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
+   
+        header("Location: http://www.freeboxes.com/customer-settings");
+        exit();
+        //return $resultRedirect;
+    }
+}

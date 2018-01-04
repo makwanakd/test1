@@ -1,0 +1,83 @@
+<?php  $customerid = $this->getCustomerId();  //die;
+$mediaUrl = $this->getMediaUrl();
+?>
+<?php
+	$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+	$customerObj = $objectManager->create('Magento\Customer\Model\Customer')->load($customerid);
+	$isimageAvailable = $customerObj->getProfileImage();
+	$customername = $customerObj->getName();
+	$customerAddress = array();
+	$city = '-';
+	$state = '';
+	$customerSince = date('m/d/Y', strtotime($customerObj->getCreatedAt()));
+	$customerSince = date('m/d/Y', strtotime($customerObj->getCreatedAt()));
+	foreach ($customerObj->getAddresses() as $address)
+	{
+	    $city = $address['city'];
+	    $region = $objectManager->create('Magento\Directory\Model\Region')->load($address['region_id']);
+		if ($region) {
+            $state = $region->getCode();
+        }
+        break;
+	}
+
+	// $data = $customerObj->getData();
+	
+	 //echo $customerObj->getState(); 
+	 //echo $customerObj->getCity(); die;
+	$profilepic = $mediaUrl.'wysiwyg/user-default.jpg';
+	if($customerObj->getId()){
+		if($isimageAvailable!=NULL && $isimageAvailable!=''){
+			$profilepic = $mediaUrl.$isimageAvailable;			
+		}else{
+			$profilepic = $mediaUrl.'wysiwyg/user-default.jpg';
+		}
+	}
+	$request = $objectManager->create('Magento\Framework\App\RequestInterface');
+	$path = $request->getPathInfo(); 
+	$path = trim ( $path ,'/' );
+	?>
+<div class="col-sm-3">
+	<div class="admin_left">
+		<form name="profile-image-form" id="profile-image" >
+			<input type="hidden" name="image" value="profile">
+			<?php if($customerid): ?>
+				<input type="hidden" name="customerid" value="<?php echo $customerid; ?>">
+			<?php endif;?>
+			<img src="<?php echo $profilepic; ?>" alt="" id="profile"/>
+			<div class="profile-overlay">
+				<div class="image-upload">
+					<label class="ttl_addphoto" for="file-input" class="cover">Upload Profile</label>
+					<?php
+					/**
+					* 
+					* @var Upload Function(Image, Form Id, Maximum image height, Minimum Image height,hidden tag name 'image' value, filesize, modalid, modalclass, input type file id)
+					* 
+					*/ ?>
+					<input id="file-input" name="profile-img" type="file" onchange="uploadprofileimagenew(this,'profile-image',400,400,'profile',102400,'myModalimg','myImageModal','file-input')"/>
+				</div>
+			</div>
+		
+			<div class="load-content" style="display: none;">
+				<div class="loader">&nbsp;</div>
+			</div>
+		</form>
+		<div class="admin_profile">
+			<div class="profile_top">
+				<h2 class="profile_title"><?php echo $customername; ?></h2>
+				<p class="profile_sub"><?php if($city!='-'){ echo $city.', '; } ?><?php echo $state; ?> <br />Member Since <?php echo $customerSince; ?></p>
+			</div>
+			<div class="profile_bottom">
+				<ul>
+					<li><a class="<?php if(strstr($path, 'order-boxes')){ echo"active";} ?>" title="Order Boxes" href="<?php echo $this->getBaseUrl()?>order-boxes/">Order Boxes</a></li>
+					<li><a class="<?php if(strstr($path, 'order-products')){ echo"active";} ?>" title="Order Products" href="<?php echo $this->getBaseUrl()?>order-products/">Order Products</a></li>
+					<li><a class="<?php if(strstr($path, 'followed-businesses')){ echo"active";} ?>" title="My Businesses" href="<?php echo $this->getBaseUrl()?>customers/followed-businesses/">My Businesses</a></li>
+					<li><a class="<?php if(strstr($path, 'customer-checkout')){ echo"active";} ?>" title="Recent Orders" href="<?php echo $this->getBaseUrl()?>customer-checkout/">Recent Orders</a></li>
+					<li><a class="<?php if(strstr($path, 'my-reviews')){ echo"active";} ?>" title="My Reviews" href="<?php echo $this->getBaseUrl()?>my-reviews/">My Reviews</a></li>
+					<li><a class="<?php if(strstr($path, 'customers/settings')){ echo"active";} ?>" title="Profile Settings" href="<?php echo $this->getBaseUrl()?>customers/settings/">Profile Settings</a></li>
+					<!--<li><a title="Support" href="{{store url=""}}contact">Support</a></li>-->
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>
