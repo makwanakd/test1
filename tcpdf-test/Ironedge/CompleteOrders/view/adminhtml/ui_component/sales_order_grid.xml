@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright © 2015 Magento. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../Ui/etc/ui_configuration.xsd">
+    <listingToolbar name="listing_top">
+        <massaction name="listing_massaction">
+            <action name="complete_order">
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="type" xsi:type="string">complete_order</item>
+                        <item name="label" xsi:type="string" translate="true">Complete</item>
+                        <item name="url" xsi:type="url" path="completeorders/order/masscomplete"/>
+                        <item name="confirm" xsi:type="array">
+                            <item name="title" xsi:type="string" translate="true">Complete items</item>
+                            <item name="message" xsi:type="string" translate="true">Are you sure you wan't to complete selected items?</item>
+                        </item>
+                     </item>
+                </argument>
+            </action>
+			<action name="pending_payment">
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="type" xsi:type="string">pending_payment</item>
+                        <item name="label" xsi:type="string" translate="true">Pending Payment</item>
+                        <item name="url" xsi:type="url" path="completeorders/order/masspendingpayment"/>
+                        <item name="confirm" xsi:type="array">
+                            <item name="title" xsi:type="string" translate="true">Pending Payment</item>
+                            <item name="message" xsi:type="string" translate="true">Are you sure you want to change status to pending payment for selected items?</item>
+                        </item>
+                     </item>
+                </argument>
+            </action>
+			<action name="processingstate">
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="type" xsi:type="string">processingstate</item>
+                        <item name="label" xsi:type="string" translate="true">Processing</item>
+                        <item name="url" xsi:type="url" path="completeorders/order/massprocessingstate"/>
+                        <item name="confirm" xsi:type="array">
+                            <item name="title" xsi:type="string" translate="true">Processing</item>
+                            <item name="message" xsi:type="string" translate="true">Are you sure you want to change status to Processing for selected items?</item>
+                        </item>
+                     </item>
+                </argument>
+            </action>
+        </massaction>
+    </listingToolbar>
+</listing>

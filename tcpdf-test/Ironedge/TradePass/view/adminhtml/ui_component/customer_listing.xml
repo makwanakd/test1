@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <columns name="customer_columns" class="Magento\Customer\Ui\Component\Listing\Columns">
+        <!-- <column name="tradepass_is_confirmed">
+            <argument name="data" xsi:type="array">
+                <item name="options" xsi:type="array">
+                    <item name="disable" xsi:type="array">
+                        <item name="value" xsi:type="string">confirmed</item>
+                        <item name="label" xsi:type="string" translate="true">Yes</item>
+                    </item>
+                    <item name="enable" xsi:type="array">
+                        <item name="value" xsi:type="string">not_confirmed</item>
+                        <item name="label" xsi:type="string" translate="true">No</item>
+                    </item>
+                </item>                
+                <item name="config" xsi:type="array">
+                    <item name="filter" xsi:type="string">select</item>
+                    <item name="editor" xsi:type="string">select</item>
+                    <item name="component" xsi:type="string">Magento_Ui/js/grid/columns/select</item>
+                    <item name="dataType" xsi:type="string">select</item>
+                    <item name="label" xsi:type="string" translate="true">Is Confirmed</item>
+                    <item name="sortOrder" xsi:type="number">51</item>
+                </item>
+            </argument>
+        </column>-->
+		<column name="is_tradepass_confirmed" class="Ironedge\TradePass\Ui\Component\Listing\Column\IsTradepassConfirmed">
+            <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                    <item name="filter" xsi:type="string">select</item>
+                    <item name="editor" xsi:type="string">select</item>
+                    <item name="label" xsi:type="string" translate="true">Is TradePass Confirmed</item>
+                    <item name="sortOrder" xsi:type="number">40</item>
+                    </item>
+            </argument>
+        </column>
+        <column name="moreinfo" class="Ironedge\TradePass\Ui\Component\Listing\Column\Moreinfo">
+            <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+						<item name="sortable" xsi:type="string">false</item>
+                    	<item name="label" xsi:type="string" translate="true">More information request</item>
+                    </item>
+            </argument>
+        </column>
+        <!--<column name="is_tradepass_confirmed" class="Ironedge\TradePass\Ui\Component\Listing\Column\IsTradepassConfirmed">
+			<argument name="data" xsi:type="array">
+				<item name="options" xsi:type="object">Ironedge\TradePass\Model\Tradepasslabel</item>
+				<item name="config" xsi:type="array">
+				<item name="filter" xsi:type="string">select</item>
+				<item name="add_field" xsi:type="boolean">true</item>
+				<item name="dataType" xsi:type="string">select</item>
+				<item name="label" xsi:type="string" translate="true">Is TradePass Confirmed</item>
+				<item name="sortOrder" xsi:type="number">100</item>
+				</item>
+			</argument>
+		</column>-->
+        <!--<column name="is_tradepass_confirmed">
+            <argument name="data" xsi:type="array">
+                <item name="options" xsi:type="object">Ironedge\TradePass\Model\Tradepasslabel</item>
+                <item name="config" xsi:type="array">
+                    <item name="filter" xsi:type="string">select</item>
+                    <item name="component" xsi:type="string">Magento_Ui/js/grid/columns/select</item>
+                    <item name="dataType" xsi:type="string">select</item>
+                    <item name="label" xsi:type="string" translate="true">Is TradePass Confirmed</item>
+                    <item name="sortOrder" xsi:type="number">100</item>
+                </item>
+            </argument>
+        </column>-->
+    </columns>
+</listing>

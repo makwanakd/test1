@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">    
+    <event name="adminhtml_customer_save_after">
+        <observer name="ironedge_tradepass_adminhtml_customer_save_after_observer" instance="Ironedge\TradePass\Observer\AdminhtmlCustomerSaveAfterObserver" />
+    </event>
+    <event name="customer_delete_commit_after">
+        <observer name="ironedge_tradepass_customer_delete_commit_after_observer" instance="Ironedge\TradePass\Observer\CustomerDeleteCommitAfterObserver" />
+    </event>     
+    <event name="customer_data_object_login">
+        <observer name="ironedge_tradepass_customer_data_object_login_observer" instance="Ironedge\TradePass\Observer\CheckLoginConfirmed" />        
+    </event>   
+    <event name="sales_order_save_after">
+        <observer name="ironedge_tradepass_invoice_attachment_observer" instance="Ironedge\TradePass\Observer\Invoiceattachment" />        
+    </event>
+    <event name="controller_action_predispatch_tradepass_account_createpost">
+        <observer name="captcha_custom_form" instance="Ironedge\TradePass\Observer\CheckCustomFormObserver" />
+    </event>
+</config>

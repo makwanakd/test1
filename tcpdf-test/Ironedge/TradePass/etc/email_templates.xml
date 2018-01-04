@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Email:etc/email_templates.xsd">
+    <template id="tradepass_email_template" label="Tradepass" file="tradepass.html" type="html" module="Ironedge_TradePass" area="frontend"/>
+    <template id="tradepass_email_template_admin" label="Tradepass Admin" file="tradepass-admin.html" type="html" module="Ironedge_TradePass" area="frontend"/>
+    <template id="tradepass_email_template_moreinfo" label="Tradepass More Information" file="tradepass-moreinfo.html" type="html" module="Ironedge_TradePass" area="frontend"/>
+</config>

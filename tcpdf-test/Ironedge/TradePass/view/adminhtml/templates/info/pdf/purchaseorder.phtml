@@ -1,0 +1,20 @@
+<?php
+/**
+ * Copyright © 2013-2017 Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+/**
+ * @var $block \Magento\OfflinePayments\Block\Info\Purchaseorder
+ */
+?>
+<?php echo $block->escapeHtml(__('Purchase Order Number: %1', $block->getInfo()->getPoNumber())); ?>
+{{pdf_row_separator}}
+<div><?php 
+$string = $block->getLayout()->createBlock('Magento\Cms\Block\Block')->setBlockId('bank_details')->toHtml();
+$string = str_replace("<p>","",$string);
+$string = str_replace("</p>","{{pdf_row_separator}}",$string);
+$string = str_replace("<br>","{{pdf_row_separator}}",$string);
+$string = str_replace("<br />","{{pdf_row_separator}}",$string);
+echo $string;
+ ?></div>
+{{pdf_row_separator}}
