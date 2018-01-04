@@ -1,0 +1,104 @@
+<?php
+	$customerGroupid = 'not-businessuser';
+	$objectManager = \Magento\Framework\App\ObjectManager::getInstance(); 
+ 	$customerSession = $objectManager->get('Magento\Customer\Model\Session');
+	if($customerSession->isLoggedIn()) {
+        $customer = $customerSession->getCustomer(); 
+        $customerGroupid = $customer->getGroupId(); 
+    }
+	$id = '';  
+	$businessUserId = '';
+	$id = $this->getBusiness()->getId();
+	$page_id = $this->getPageId($id)->getPageId(); 
+	$businessUserId = $this->getBusiness()->getBusinessuserId(); 
+	$customerid = $this->getCustomerId(); 
+	$totalfollows = $this->getTotalFollows($id); 
+	$baseUrl = $this->getBaseUrl();
+	$mediaUrl = $this->getMediaUrl();
+	$data = $this->getCollection($page_id); 
+	$cover = $data->getImage(); 
+	$website = $data->getMainWebsiteUrl();
+	$category = $this->getBusinessCategory($businessUserId);
+	$tagLine = $data->getTagLine();
+
+	$websiteWithouthttp = str_replace("https://","",$website);
+	$websiteWithouthttp = str_replace("http://","",$websiteWithouthttp);
+	$checkFollow = $this->getCheckFollowBusiness($customerid,$id); 
+
+	$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+	$customerObj = $objectManager->create('Magento\Customer\Model\Customer')->load($businessUserId); 
+	$isimageAvailable = $customerObj->getProfileImage();
+	$tab_profile = $mediaUrl.'wysiwyg/user-default.jpg';
+
+	if($customerObj->getId()){
+		if($isimageAvailable!=NULL && $isimageAvailable!=''){
+			$tab_profile = $mediaUrl.$isimageAvailable;			
+		}else{
+			$tab_profile = $mediaUrl.'wysiwyg/user-default.jpg';
+		}
+	}
+
+?>
+<div class="business_profile">
+					<div class="business_bg">
+						<img src="<?php if($cover): echo $mediaUrl.$cover; else: echo $mediaUrl.'wysiwyg/business-profile-default.png';  endif; ?>" id="cover">
+						<?php if($customerid==$businessUserId && $customerGroupid==4){ ?>
+						<form name="cover-image" id="cover-image" >
+							<input type="hidden" name="id" value="<?php echo $id; ?>">
+							<input type="hidden" name="image" value="cover">
+							<span class="icon_edit">
+								<div class="image-upload cover">
+									<label class="ttl_addphoto" for="file-input-cover"></label>
+									<?php
+									/**
+									* 
+									* @var Upload Function(Image, Form Id, Maximum image height, Minimum Image height,hidden tag name 'image' value, filesize, modalid, modalclass, input type file id)
+									* 
+									*/ ?>
+									<input id="file-input-cover" name="cover-image" type="file" onchange="uploadcoverimage(this,'cover-image',885,360,'cover',102400,'myModalimg','myImageModal','file-input-cover')"/>
+								</div>
+								<div class="load-content" style="display: none;">
+									<div class="loader">&nbsp;</div>
+								</div>
+							</span>
+						</form>
+						<?php } ?>
+					</div>
+					<div class="business_profile_details">
+						<div class="row">
+							<div class="col-sm-8">
+								<h3><?php echo $tagLine; ?></h3>
+								<ul>
+									<li>
+										<a title="<?php echo $website; ?>" href="<?php echo $website; ?>" target="_blank"><?php echo $websiteWithouthttp; ?></a>
+									</li>
+									<li>
+										<a title="<?php echo $category; ?>" href="javascript:;"><?php echo $category; ?></a>
+									</li>
+								</ul>
+							</div>
+							<div class="col-sm-4">
+								<div class="follow_block">
+									<ul>
+										<?php if($customerid==$businessUserId){ ?>
+											<li class="follow-count"><a href="javascript:void(0);" class="btn-followers-popup" data-toggle="modal" data-target="#followers-popup"><?php echo $totalfollows; ?> Follows</a></li>
+										<?php }else{ ?>
+											<li class="follow-count"><?php echo $totalfollows; ?> Follows</li>
+										<?php } ?>
+										<?php if($customerid && $customerGroupid!=4){ ?>
+											<?php if($customerid!=$businessUserId){ ?>
+												<li class="btn_follow">
+												<?php if($checkFollow == NULL || $checkFollow == 0): ?>
+												<button class="business_follow" onclick="follow('<?php echo $page_id; ?>','<?php echo $id ?>','<?php echo $customerid; ?>','follow')">Follow</button>
+												<?php else: ?>
+												<button class="business_follow" onclick="unfollow('<?php echo $checkFollow; ?>','unfollow')">Unfollow</button>
+												<?php endif; ?>
+											</li>
+										<?php } ?>
+										<?php } ?>
+									</ul>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>

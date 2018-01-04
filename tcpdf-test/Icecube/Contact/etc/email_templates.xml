@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../Email/etc/email_templates.xsd">
+<template id="contact_email" label="Contact Form" file="contact_email.html" type="html" module="Icecube_Contact" area="frontend"/>
+</config>

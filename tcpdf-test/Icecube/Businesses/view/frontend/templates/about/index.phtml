@@ -1,0 +1,90 @@
+<?php
+	/*$customerGroupid = 'not-businessuser';
+	$objectManager = \Magento\Framework\App\ObjectManager::getInstance(); 
+ 	$customerSession = $objectManager->get('Magento\Customer\Model\Session');
+	if($customerSession->isLoggedIn()) {
+        $customer = $customerSession->getCustomer(); 
+        $customerGroupid = $customer->getGroupId(); 
+    }
+	$id = '';  
+	$businessUserId = '';
+	$id = $this->getBusiness()->getId();
+	$page_id = $this->getPageId($id)->getPageId(); 
+	$businessUserId = $this->getBusiness()->getBusinessuserId(); 
+	$customerid = $this->getCustomerId(); 
+	$totalfollows = $this->getTotalFollows($id); 
+	$baseUrl = $this->getBaseUrl();
+	$mediaUrl = $this->getMediaUrl();
+	$data = $this->getCollection($page_id); 
+	$cover = $data->getImage(); 
+	$website = $data->getMainWebsiteUrl();
+	$category = $this->getBusinessCategory($businessUserId);
+	$tagLine = $data->getTagLine();
+
+	$websiteWithouthttp = str_replace("https://","",$website);
+	$websiteWithouthttp = str_replace("http://","",$websiteWithouthttp);
+	$checkFollow = $this->getCheckFollowBusiness($customerid,$id); 
+
+	$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+	$customerObj = $objectManager->create('Magento\Customer\Model\Customer')->load($businessUserId); 
+	$isimageAvailable = $customerObj->getProfileImage();
+	$tab_profile = $mediaUrl.'wysiwyg/user-default.jpg';
+
+	if($customerObj->getId()){
+		if($isimageAvailable!=NULL && $isimageAvailable!=''){
+			$tab_profile = $mediaUrl.$isimageAvailable;			
+		}else{
+			$tab_profile = $mediaUrl.'wysiwyg/user-default.jpg';
+		}
+	}
+*/
+?>
+<?php 
+	$objectManager = \Magento\Framework\App\ObjectManager::getInstance(); 
+	$id = '';  
+	$businessUserId = '';
+	$id = $this->getBusiness()->getId();
+	$businessUserId = $this->getBusiness()->getBusinessuserId(); 
+	if($businessUserId!=''){
+		$customerObj = $objectManager->create('Magento\Customer\Model\Customer')
+    	->load($businessUserId);
+	}
+	if($id!=''){
+		$business = $objectManager->create('Icecube\Businesses\Model\Index');
+		$business->load($id, 'business_id');
+		$companyDescription = $business->getCompanyDescription();
+ 		$MainWebsiteUrl = $business->getMainWebsiteUrl();
+	}
+?>
+
+<section class="admin_main_content">
+	<div class="container">
+		<div class="row">
+			<?php 
+				//echo $this->getLayout()->createBlock('Magento\Cms\Block\Block')->setBlockId('account-left-sidebar-four')->toHtml();
+				echo $this->getLayout()->createBlock("Icecube\Businesses\Block\Frontend\Index")->setTemplate("Icecube_Businesses::sidebar.phtml")->toHtml();
+			?>
+			<div class="col-sm-9 pull-right">
+
+			<?php echo $this->getLayout()->createBlock("Icecube\Businesses\Block\Frontend\Index")->setTemplate("Icecube_Businesses::timeline-top-banner.phtml")->toHtml(); ?>
+
+				<div class="business_tab">
+					<div class="coupon_details">
+						<h3>About <?php echo $customerObj->getBusinessName(); ?></h3>
+						<p><?php echo $companyDescription; ?></p>
+					</div>
+					<div class="coupon_details">
+						<h3>Contact Details</h3>
+						<p>Phone: <?php echo $customerObj->getBusinessPhoneNumberCheckout(); ?></p>
+						<p>Email: <?php echo $customerObj->getEmail(); ?></p>
+						<p>Wesbite: <?php echo $MainWebsiteUrl; ?></p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+<?php echo $this->getLayout()->createBlock('Magento\Cms\Block\Block')->setBlockId('account-new-footer')->toHtml();?>
+<?php
+	echo $this->getLayout()->createBlock("Icecube\Businesses\Block\Frontend\Index")->setTemplate("Icecube_Businesses::business-followers.phtml")->toHtml();
+?>

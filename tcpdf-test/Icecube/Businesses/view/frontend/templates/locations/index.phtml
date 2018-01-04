@@ -1,0 +1,184 @@
+<?php
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$media_url = $objectManager->get('Magento\Store\Model\StoreManagerInterface')
+                    ->getStore()
+                    ->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+?>
+<?php 
+$id = $this->getBusiness()->getId();
+$businessUserId = $this->getBusiness()->getBusinessuserId(); 
+
+$profileImage = $objectManager->create('Magento\Customer\Model\Customer')->load($businessUserId);
+$isimageAvailable = $profileImage->getProfileImage();
+$profilepic = $media_url.'wysiwyg/user-default.jpg';
+if($profileImage->getId()){
+        if($isimageAvailable!=NULL && $isimageAvailable!=''){
+            $profilepic = $media_url.$isimageAvailable;          
+        }else{
+            $profilepic = $media_url.'wysiwyg/user-default.jpg';
+        }
+    }
+
+$businessAddresses = array();
+    
+    $customerObj = $this->getCustomerDetails($businessUserId);  
+    $count = 0;
+    foreach ($customerObj->getAddresses() as $addresses) {
+        $website_name = '';
+        $city = $addresses['city'];
+        $telephone = $addresses['telephone']; 
+        $website_name = $addresses['website_name']; 
+        $region = $objectManager->create('Magento\Directory\Model\Region')->load($addresses['region_id']);
+        $postcode = $addresses->getPostcode();
+        $state = '';
+        if ($region) {
+            $state = $region->getCode();
+        }
+         $street = $addresses['street']; 
+        $arr = explode("\n", $street);
+
+        $street1 = '';
+        $street2 = '';
+        if(isset($arr['0'])){
+           $street1 = $arr['0'];
+        }
+        if(isset($arr['1'])){
+           $street2 = $arr['1']; 
+        } 
+        
+        $tempAddress = $city.', '.$state.' '.$postcode;
+        $businessAddresses[$count]['profilepic'] = $profilepic;
+        $businessAddresses[$count]['street1'] = $street1;
+        $businessAddresses[$count]['street2'] = $street2;
+        $businessAddresses[$count]['city'] = $city;
+        $businessAddresses[$count]['telephone'] = $telephone;
+        $businessAddresses[$count]['website_name'] = $website_name;
+        $businessAddresses[$count]['location_name'] = $addresses['location_name'];
+        $businessAddresses[$count]['state'] = $state;
+        $businessAddresses[$count]['postcode'] = $postcode;
+        $businessAddresses[$count]['latlong'] = $this->getLatLong($tempAddress);
+        $count++;
+    }
+?> 
+<p><?php //echo $this->getLayout()->createBlock('Magento\Cms\Block\Block')->setBlockId('account-header-new-two')->toHtml();?></p>
+<section class="admin_main_content">
+<div class="container">
+<div class="row"><?php //echo $this->getLayout()->createBlock('Magento\Cms\Block\Block')->setBlockId('account-left-sidebar-four')->toHtml();?>
+  <?php   echo $this->getLayout()->createBlock("Icecube\Businesses\Block\Frontend\Index")->setTemplate("Icecube_Businesses::sidebar.phtml")->toHtml(); ?>
+<div class="col-sm-9 pull-right">
+
+<?php echo $this->getLayout()->createBlock("Icecube\Businesses\Block\Frontend\Index")->setTemplate("Icecube_Businesses::timeline-top-banner.phtml")->toHtml(); ?>
+
+<div class="business_tab">
+<div class="location_search"><input class="location_search_input" autocomplete="off" name="" type="text" placeholder="Search for a location..." /> <input class="location_searchbtn" autocomplete="off" name="" type="button" /></div>
+<div id="map" style="height: 550px;"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<?php
+$markers = '[';
+$icons = '[';
+$iconColor = 'light_icon.png';
+foreach($businessAddresses as $addressinfo){
+    if($addressinfo['latlong']['lat']!='none'){
+        $markers .= '["", '.$addressinfo['latlong']['lat'].', '.$addressinfo['latlong']['lng'].'],';
+        $icons .= 'new google.maps.MarkerImage("'.$media_url.'wysiwyg/'.$iconColor.'", new google.maps.Size(60, 60), new google.maps.Point(0, 0), new google.maps.Point(30, 30)),';
+        if($iconColor=='light_icon.png'){
+            $iconColor = 'dark_icon.png';
+        }else if($iconColor=='dark_icon.png'){
+            $iconColor = 'light_icon.png';
+        }else{
+            
+        }
+    }   
+}
+$markers .= ']';
+$icons .= ']';
+
+$markers = str_replace('],]',']]',$markers);
+
+$icons = str_replace(')),]','))]',$icons);
+
+?>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAf9hekMornNCXXtyW179dYNFhO3vnWtkM" type="text/javascript" xml="space"></script>
+<script src="//rawgit.com/googlemaps/v3-utility-library/master/infobox/src/infobox.js" type="text/javascript" xml="space"></script>
+<script type="text/javascript" xml="space">
+function initialize() {
+    var loc, map, marker, infobox;
+    var bounds = new google.maps.LatLngBounds();
+    var markers = <?php echo $markers; ?>;
+    var icons = <?php echo $icons; ?>;
+    map = new google.maps.Map(document.getElementById("map"), {
+         zoom: 12,
+         mapTypeId: google.maps.MapTypeId.ROADMAP
+    });
+        infobox = new InfoBox({
+             disableAutoPan: true,
+             maxWidth: 150,
+             pixelOffset: new google.maps.Size(-110, -180),
+             zIndex: null,
+             boxStyle: {
+                width: "315px",
+                overflow: 'visible'
+            },
+            closeBoxMargin: "2px",
+            closeBoxURL: "http://www.google.com/intl/en_us/mapfiles/close.gif",
+            infoBoxClearance: new google.maps.Size(1, 1)
+        });
+    var x = document.getElementsByClassName("infobox");
+    for( i = 0; i < markers.length; i++ ) {
+        var position = new google.maps.LatLng(markers[i][1], markers[i][2]);
+        bounds.extend(position);
+        marker = new google.maps.Marker({
+            position: position,
+            map: map,
+            title: markers[i][0],
+            visible: true,
+            icon: icons[i]
+        });
+        google.maps.event.addListener(marker, 'click', (function(marker, i) {
+            return function() {
+                infobox.open(map, this);
+                //map.panTo(position);
+                infobox.setContent(x[i].innerHTML);
+            }
+        })(marker, i));
+        map.fitBounds(bounds);
+     }
+     
+   
+}
+google.maps.event.addDomListener(window, 'load', initialize);
+
+</script>
+<div class="infobox-wrapper">
+<?php
+foreach($businessAddresses as $addressinfo){
+
+    if($addressinfo['latlong']['lat']!='none'){
+
+       // $zipcodeCount = $this->getFreeboxesUsers($addressinfo['postcode']);     
+        ?>
+<div class="infobox">
+<div class="pull-left"><img src="<?php echo $addressinfo['profilepic']; ?>" alt="" /></div>
+<div class="pull-right">
+<h4><?php echo $addressinfo['location_name']; ?></h4>
+<p><?php echo $addressinfo['street1']; ?></p>
+<p><?php echo $addressinfo['street2']; ?></p>
+<p><?php echo $addressinfo['city']; ?>, <?php echo $addressinfo['state']; ?>, <?php echo $addressinfo['postcode']; ?></p>
+<div class="additional-details"><a href="tel:<?php echo $addressinfo['telephone']; ?>"><?php echo $addressinfo['telephone']; ?></a> <a href="<?php echo $addressinfo['website_name']; ?>"><?php echo $addressinfo['website_name']; ?></a></div> 
+</div>
+</div>
+<?php 
+    }
+}
+?>
+
+</div>
+<?php echo $this->getLayout()->createBlock('Magento\Cms\Block\Block')->setBlockId('account-new-footer')->toHtml();?>
+<?php
+    echo $this->getLayout()->createBlock("Icecube\Businesses\Block\Frontend\Index")->setTemplate("Icecube_Businesses::business-followers.phtml")->toHtml();
+?>

@@ -1,0 +1,145 @@
+<?php
+//$businessUserId = $this->getBusiness()->getBusinessuserId();
+$baseUrl = $this->getBaseUrl();
+$mediaUrl = $this->getMediaUrl(); 
+$customerid = $this->getCustomerId();
+$businessUserId = $customerid;
+?>
+<?php
+	$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+	$modelcollection = $objectManager->get('\Icecube\Businesses\Model\ResourceModel\Businesses\CollectionFactory')->create();
+	$modelcollection->addFieldToFilter('businessuser_id' , $businessUserId);
+	$businessData = $modelcollection->getFirstItem();
+	$businessesName = $businessData->getBusinessPageUrl(); 
+	$id = $businessData->getId();
+	
+	$request = $objectManager->create('Magento\Framework\App\RequestInterface');
+ 	$path = $request->getPathInfo(); 
+ 	
+ 
+	?>
+<?php
+$allReviews = $this->getReviews($id);
+$totalRatings = 0;
+$totalReviews = 0;
+$rating = 0;
+foreach($allReviews as $review){
+	if($review->getRating()!='' && $review->getRating()!=NULL){
+		$totalRatings += $review->getRating();
+		$totalReviews++;
+	}
+}
+if($totalRatings){
+	if($totalReviews){
+		$rating = $totalRatings / $totalReviews;
+	}
+}
+$temprating = 0;
+if($rating){
+	$temprating = $rating;
+	$rating = $rating * 20;
+	$temprating = number_format((float)$temprating, 1, '.', '');
+	$rating = number_format((float)$rating, 1, '.', '');
+}else{
+	$rating = 0;
+}
+?>
+<?php
+	
+	$customerObj = $objectManager->create('Magento\Customer\Model\Customer')->load($businessUserId);
+	$isimageAvailable = $customerObj->getProfileImage();
+	$businessName = $customerObj->getBusinessName();
+	$profilepic = $mediaUrl.'wysiwyg/user-default.jpg';
+	if($customerObj->getId()){
+		if($isimageAvailable!=NULL && $isimageAvailable!=''){
+			$profilepic = $mediaUrl.$isimageAvailable;			
+		}else{
+			$profilepic = $mediaUrl.'wysiwyg/user-default.jpg';
+		}
+	}
+	?>
+	
+
+<div class="col-sm-3">
+	<div class="admin_left">
+		<form name="profile-image-form" id="profile-image" >
+		<input type="hidden" name="id" value="<?php echo $id; ?>">
+		<input type="hidden" name="image" value="profile">
+		<?php if(isset($customerid)): ?>
+			<input type="hidden" name="customerid" value="<?php echo $customerid; ?>">
+		<?php endif;?>
+		<img src="<?php echo $profilepic; ?>" alt="" id="profile"/>
+		<?php if($customerid==$businessUserId){ ?>
+		<div class="profile-overlay">
+			<div class="image-upload">
+				<label class="ttl_addphoto" for="file-input" class="cover">Upload Profile</label>
+				<?php
+				/**
+				* 
+				* @var Upload Function(Image, Form Id, Maximum image height, Minimum Image height,hidden tag name 'image' value, filesize, modalid, modalclass, input type file id)
+				* 
+				*/ ?>
+				<input id="file-input" name="profile-img" type="file" onchange="uploadprofileimagenew(this,'profile-image',400,400,'profile',102400,'myModalimg','myImageModal','file-input');"/>
+			</div>
+		</div>
+		<?php } ?>
+		<div class="load-content" style="display: none;">
+			<div class="loader">&nbsp;</div>
+		</div>
+		</form>
+		<div class="admin_profile">
+			<div class="profile_top">
+				<h2 class="profile_title"><?php echo $businessName; ?></h2>
+			</div>
+			<div class="customer-reviews-count">
+				<div class="ratings-out-of"><?php echo $temprating.'/5'; ?></div>
+				<div class="total_yellow_rating">
+					<div class="total-innner-rating-div" style="width: <?php echo $rating; ?>%;">
+						<img src="<?php echo $mediaUrl; ?>wysiwyg/yellow_rating.png" alt="">
+
+					</div>
+				</div>
+			</div>			
+			<div class="profile_bottom">
+				<ul>
+					<?php //echo $path = 'businesses/'.$businessesName; die;?>
+					<li><a class="<?php if($path == '/businesses/'.$businessesName){ echo"active"; } ?>" title="Home" href="<?php echo $baseUrl; ?>businesses/<?php echo $businessesName;?>">Home</a></li>
+					<li><a class="<?php if(strstr($path, 'about')){ echo"active";} ?>" title="About" href="<?php echo $baseUrl; ?>businesses/<?php echo $businessesName;?>/about/">About</a></li>
+					<?php if($customerid){ ?>
+						<li><a class="<?php if(strstr($path, 'free-offers')){ echo"active";} ?>" title="Free Offers" href="<?php echo $baseUrl; ?>businesses/<?php echo $businessesName;?>/free-offers/">Free Offers</a></li>
+					<?php } ?>
+					<li><a class="<?php if(strstr($path, 'locations')){ echo"active";} ?>" title="Locations" href="<?php echo $baseUrl; ?>businesses/<?php echo $businessesName;?>/locations/">Locations</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+	<div class="suggest_business">
+		<h3>Suggested Businesses</h3>
+		<ul>
+			<li>
+				<img src="<?php echo $mediaUrl; ?>wysiwyg/features-img-4-small.jpg" alt="" />
+				<div class="sub_title">Dick&rsquo;s Sporting Goods</div>
+				<ul>
+					<li><a title="Follow" href="#">Follow</a></li>
+					<li><a title="Offer" href="#">Offers</a></li>
+				</ul>
+			</li>
+			<li>
+				<img src="<?php echo $mediaUrl; ?>wysiwyg/features-img-3-small.jpg" alt="" />
+				<div class="sub_title">Pitell Granite</div>
+				<ul>
+					<li><a title="Follow" href="#">Follow</a></li>
+					<li><a title="Offer" href="#">Offers</a></li>
+				</ul>
+			</li>
+			<li>
+				<img src="<?php echo $mediaUrl; ?>wysiwyg/features-img-2-small.jpg" alt="" />
+				<div class="sub_title">AZ Staffing</div>
+				<ul>
+					<li><a title="Follow" href="#">Follow</a></li>
+					<li><a title="Offer" href="#">Offers</a></li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+</div>

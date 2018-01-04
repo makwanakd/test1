@@ -1,0 +1,1058 @@
+<?php $_objectManager = \Magento\Framework\App\ObjectManager::getInstance(); //instance of\Magento\Framework\App\ObjectManager
+$storeManager = $_objectManager->get('Magento\Store\Model\StoreManagerInterface'); 
+$currentStore = $storeManager->getStore(); 
+$mediaUrl = $currentStore->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+$base_url = $_objectManager->get('Magento\Store\Model\StoreManagerInterface')
+            ->getStore($currentStore)
+            ->getBaseUrl();
+$model = $_objectManager->create('\Icecube\Extrafields\Model\Category\Types')->getAllOptions();
+?>
+
+<?php 
+$businessName = "";
+$customerId = "";
+$businessId = "";
+
+$customerSession = $_objectManager->create('Magento\Customer\Model\Session');
+if ($customerSession->isLoggedIn()) {
+	$customerId = $customerSession->getCustomerId(); 
+
+	$modelcollection = $_objectManager->get('\Icecube\Businesses\Model\ResourceModel\Businesses\CollectionFactory')->create();
+
+	$modelcollection->addFieldToFilter('businessuser_id' , $customerId);
+	$businessData = $modelcollection->getFirstItem();
+ 	$businessName = $businessData->getBusinessPageUrl();
+ 	$businessId = $businessData->getId();
+}
+if(strpos($currentStore->getCurrentUrl(), $businessName)==FALSE){
+	header('Location: '.$this->getBaseUrl().'businesses/'.$businessName."/ad-offer-manager");
+	exit();
+}
+$orders = $block->getOrders($customerId);
+
+$customerObj = $_objectManager->create('Magento\Customer\Model\Customer')->load($customerId);
+
+
+$choosenPackage = '';
+foreach($orders as $order){
+	foreach($order->getAllItems() as $orderitem){
+		//echo $orderitem->getProductId();
+		$options = $orderitem->getProductOptions();
+		 if (isset($options['options']) && !empty($options['options'])) {
+			 foreach ($options['options'] as $option) {
+				 if($option['label']=='Package'){
+				 	$choosenPackage = $option['value'];
+				 	break;
+				 }				 
+			 }
+		 }
+
+	}
+}
+$collectionFactory = $block->getAllPackages();
+$landingPagesCount = 1;
+$aoAllocatedInventory = 0;
+foreach($collectionFactory as $collection){
+	if($collection->getName()==$choosenPackage){
+		$landingPagesCount = $collection->getBusinessLandingPages();
+		$aoAllocatedInventory = $collection->getBoxCount().'/'.$collection->getBoxAdvertisementsCount().' boxes';
+	}
+}
+$adOffers = $block->getCollectionAdOffer($customerId);
+$addofferId1 = 'inital';
+$addofferId2 = 'inital';
+$addofferId3 = 'inital';
+
+$allow2 = false;
+$allow3 = false;
+$allow4 = false;
+
+$aoLogo1 = '';
+$aoLogoAdditionl1 = '';
+$aoUniqueUrl1 = 'unique-url';
+$aoUniqueEmail1 = '';
+$aoTargetingCampaign1 = '';
+$aoCampaignTitle1 = '';
+$aoAllocatedInventory1 = '';
+$aoBusinessLocation1 = '';
+$aoTargetMarket1 = '';
+$aoAdofferHeadline1 = '';
+$aoOfferType1 = '';
+$aoPromoCode1 = '';
+$aoPromoCodeImg1 = '';
+$aoExpirationDate1 = '';
+$aoAdofferDescription1 = '';
+$aoHowToRedeem1 = '';
+$aoTermsConditions1 = '';
+
+$aoLogo2 = '';
+$aoLogoAdditionl2 = '';
+$aoUniqueUrl2 = 'unique-url';
+$aoUniqueEmail2 = '';
+$aoTargetingCampaign2 = '';
+$aoCampaignTitle2 = '';
+$aoAllocatedInventory2 = '';
+$aoBusinessLocation2 = '';
+$aoTargetMarket2 = '';
+$aoAdofferHeadline2 = '';
+$aoOfferType2 = '';
+$aoPromoCode2 = '';
+$aoPromoCodeImg2 = '';
+$aoExpirationDate2 = '';
+$aoAdofferDescription2 = '';
+$aoHowToRedeem2 = '';
+$aoTermsConditions2 = '';
+
+$aoLogo3 = '';
+$aoLogoAdditionl3 = '';
+$aoUniqueUrl3 = 'unique-url';
+$aoUniqueEmail3 = '';
+$aoTargetingCampaign3 = '';
+$aoCampaignTitle3 = '';
+$aoAllocatedInventory3 = '';
+$aoBusinessLocation3 = '';
+$aoTargetMarket3 = '';
+$aoAdofferHeadline3 = '';
+$aoOfferType3 = '';
+$aoPromoCode3 = '';
+$aoPromoCodeImg3 = '';
+$aoExpirationDate3 = '';
+$aoAdofferDescription3 = '';
+$aoHowToRedeem3 = '';
+$aoTermsConditions3 = '';
+
+
+
+$adoffercount = 0;
+foreach($adOffers as $adOffer){
+	if($adoffercount==0){
+		$addofferId1 = $adOffer->getId();
+		$allow2 = TRUE;
+		$aoLogo1 = $adOffer->getLogo();
+		$aoLogoAdditionl1 = $adOffer->getLogoAdditional();
+		$aoUniqueUrl1 = $adOffer->getCouponUniqueUrl();
+		$aoUniqueEmail1 = $adOffer->getCouponSendEmail();
+		$aoTargetingCampaign1 = $adOffer->getTargetingCampaign();
+		$aoCampaignTitle1 = $adOffer->getCampaignTitle();
+		$aoAllocatedInventory1 = $adOffer->getAllocatedInventory();
+		$aoBusinessLocation1 = $adOffer->getBusinessLocation();
+		$aoTargetMarket1 = $adOffer->getTargetMarket();
+		$aoAdofferHeadline1 = $adOffer->getAdofferHeadline();
+		$aoOfferType1 = $adOffer->getOfferType();
+		$aoPromoCode1 = $adOffer->getPromoCode();
+		$aoPromoCodeImg1 = $adOffer->getPromoCodeImg();
+		$aoExpirationDate1 = $adOffer->getExpirationDate();
+		$aoAdofferDescription1 = $adOffer->getAdofferDescription();
+		$aoHowToRedeem1 = $adOffer->getHowToRedeem();
+		$aoTermsConditions1 = $adOffer->getTermsConditions();
+	}
+	if($adoffercount==1){
+		$allow3 = TRUE;
+		$addofferId2 = $adOffer->getId();
+		$aoLogo2 = $adOffer->getLogo();
+		$aoLogoAdditionl2 = $adOffer->getLogoAdditional();
+		$aoUniqueUrl2 = $adOffer->getCouponUniqueUrl();
+		$aoUniqueEmail2 = $adOffer->getCouponSendEmail();
+		$aoTargetingCampaign2 = $adOffer->getTargetingCampaign();
+		$aoCampaignTitle2 = $adOffer->getCampaignTitle();
+		$aoAllocatedInventory2 = $adOffer->getAllocatedInventory();
+		$aoBusinessLocation2 = $adOffer->getBusinessLocation();
+		$aoTargetMarket2 = $adOffer->getTargetMarket();
+		$aoAdofferHeadline2 = $adOffer->getAdofferHeadline();
+		$aoOfferType2 = $adOffer->getOfferType();
+		$aoPromoCode2 = $adOffer->getPromoCode();
+		$aoPromoCodeImg2 = $adOffer->getPromoCodeImg();
+		$aoExpirationDate2 = $adOffer->getExpirationDate();
+		$aoAdofferDescription2 = $adOffer->getAdofferDescription();
+		$aoHowToRedeem2 = $adOffer->getHowToRedeem();
+		$aoTermsConditions2 = $adOffer->getTermsConditions();
+	}
+	if($adoffercount==2){
+		$allow4 = TRUE;
+		$addofferId3 = $adOffer->getId();
+		$aoLogo3 = $adOffer->getLogo();
+		$aoLogoAdditionl3 = $adOffer->getLogoAdditional();
+		$aoUniqueUrl3 = $adOffer->getCouponUniqueUrl();
+		$aoUniqueEmail3 = $adOffer->getCouponSendEmail();
+		$aoTargetingCampaign3 = $adOffer->getTargetingCampaign();
+		$aoCampaignTitle3 = $adOffer->getCampaignTitle();
+		$aoAllocatedInventory3 = $adOffer->getAllocatedInventory();
+		$aoBusinessLocation3 = $adOffer->getBusinessLocation();
+		$aoTargetMarket3 = $adOffer->getTargetMarket();
+		$aoAdofferHeadline3 = $adOffer->getAdofferHeadline();
+		$aoOfferType3 = $adOffer->getOfferType();
+		$aoPromoCode3 = $adOffer->getPromoCode();
+		$aoPromoCodeImg3 = $adOffer->getPromoCodeImg();
+		$aoExpirationDate3 = $adOffer->getExpirationDate();
+		$aoAdofferDescription3 = $adOffer->getAdofferDescription();
+		$aoHowToRedeem3 = $adOffer->getHowToRedeem();
+		$aoTermsConditions3 = $adOffer->getTermsConditions();
+	}
+	$adoffercount++;
+}
+if($aoUniqueUrl1=='' || $aoUniqueUrl1==''){
+	$aoUniqueUrl1 = 'unique-url';
+}
+if($aoUniqueUrl2=='' || $aoUniqueUrl2==''){
+	$aoUniqueUrl2 = 'unique-url';
+}
+if($aoUniqueUrl3=='' || $aoUniqueUrl3==''){
+	$aoUniqueUrl3 = 'unique-url';
+}
+?>
+
+<?php //echo $this->getLayout()->createBlock('Magento\Cms\Block\Block')->setBlockId('account-header-new-two')->toHtml();?>
+<section class="admin_main_content">
+<div class="container">
+<div class="row">
+<?php echo $this->getLayout()->createBlock("Icecube\Businesses\Block\Frontend\Index")->setTemplate("Icecube_Businesses::sidebar.phtml")->toHtml(); ?>
+<form class="addoffermail" action="<?php echo $block->getUrl().'businesses/adoffermanager/submit'?>" method="post" id="form-validate" enctype="multipart/form-data" data-hasrequired="<?php /* @escapeNotVerified */ echo __('* Required Fields') ?>" data-mage-init='{"validation":{}}'>
+<input type="hidden" value="<?php echo $businessId ?>" name="businessid"/>
+<input type="hidden" value="<?php echo $customerId ?>" name="businessuid"/>
+<input type="hidden" value="0" name="currentselection" class="currentselection"/>
+<?php // echo $this->getLayout()->createBlock('Magento\Cms\Block\Block')->setBlockId('account-left-sidebar-two')->toHtml();?>
+
+<div class="col-sm-9 pull-right">
+<div class="add_offer">
+<div class="load-logo-content">
+			<div class="loader">&nbsp;</div>
+		</div>
+<ul class="nav nav-tabs">
+<li class="active"><a href="#home" onclick="disablepublish(1);" data-toggle="tab">Ad/Offer #1</a></li>
+<?php if($landingPagesCount>1){ ?>
+<li class="its<?php if(!$allow2){ echo $addofferId2; } ?>"><a onclick="disablepublish(2);" href="#menu1" data-toggle="tab">Ad/Offer #2</a></li>
+<?php } ?>
+<?php if($landingPagesCount>2){ ?>
+<li class="its<?php if(!$allow3){ echo $addofferId3; } ?>"><a onclick="disablepublish(3);"  href="#menu2" data-toggle="tab">Ad/Offer #3</a></li>
+<?php } ?>
+<li class="pull-right"><a title="+ Create New Ad/Offer" href="javascript:void()">+ Create New Ad/Offer</a></li>
+</ul>
+<div class="tab-content">
+<div id="home" class="tab-pane fade in active">
+<input type="hidden" value="<?php echo $addofferId1; ?>" name="adoffferid1"/>
+<div class="upload_logo_section">
+<div class="upload_logo_top">Upload Your Logo</div>
+<div class="upload_logo_contain">
+<p>Before you add your Ad/Offer details, please upload a high-resolution version of your logo (EPS,
+AI, PNG, or JPG). Your logo will be printed on all box labels, so please ensure you follow the size
+dimensions (4” x 4” or 6.5” x 3.75”) seen in the text link below in order to receive the best results.</p>
+<div class="image-upload"><label class="ttl_addphoto" for="offerlogo1">Upload Logo</label> <input id="offerlogo1" type="file" name="offerlogo1" onchange="uploadofferlogo(this,'form-validate',500,360,'cover',102400,'myModalimg','myImageModal','offerlogo1-cover','1')"/></div>
+
+<div class="offer-logo-container">
+<div class="image-upload"><label class="ttl_addphoto" for="offerlogoadditional1">PDF/EPS/AI</label> <input id="offerlogoadditional1" type="file" name="offerlogoadditional1" onchange="uploadofferlogoadditional(this,'form-validate',500,360,'cover',102400,'myModalimg','myImageModal','offerlogo1-cover','1')"/>
+</div>
+<div class="uploaded-additional-img1"></div>
+</div>
+
+<a href="javascript:void(0);" type="button" data-toggle="modal" data-target="#logo-dim-popup">View Logo Dimension Options</a></div>
+<input type="hidden" id="logo1" name="logo1" value="<?php echo $aoLogo1; ?>" />
+<input type="hidden" id="logoadditional1" name="logoadditional1" value="<?php echo $aoLogoAdditionl1; ?>" />
+<input type="hidden" id="coupon_unique_url1" name="coupon_unique_url1" value="<?php echo $aoUniqueUrl1; ?>" />
+<input type="hidden" class="coupon_unique_email" id="coupon_unique_email1" name="coupon_unique_email1" value="<?php echo $aoUniqueEmail1; ?>" />
+</div>
+<div class="sign-up-form">
+<div class="panel panel-default">
+<div class="panel-heading">
+<div class="pull-left">Campaign Information</div>
+</div>
+<div class="panel-body">
+<div class="row">
+<div class="col-md-12">
+<div class="form-group targeting-campaign"><label class="title-label">Who are you targeting for this campaign?</label>
+<div class="select_group">
+<select class="selectpicker validate-select" name="targeting_campaign1">
+<option value="1" <?php if($aoTargetingCampaign1=='1'){ echo "selected=selected"; } ?>>New Movers</option>
+<option value="2" <?php if($aoTargetingCampaign1=='2'){ echo "selected=selected"; } ?>>Online Shoppers</option>
+</select>
+</div>
+</div>
+</div>
+</div>
+<div class="shippment_address ">
+	<div class="row">
+		<div class="col-md-6">
+			<div class="form-group"><label>Campaign Title</label>
+				<div class="select_group"><input class="form-control" type="text" name="campaign_title1" value="<?php echo $aoCampaignTitle1; ?>" data-validate='{"required":true}'/>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="form-group"><label>Allocated Inventory</label>
+				<div class="select_group"><select class="selectpicker validate-select" name="allocated_inventory1"><option value="">Make a selection</option><option value="<?php echo $aoAllocatedInventory; ?>" <?php if($aoAllocatedInventory1==$aoAllocatedInventory){ echo "selected=selected"; } ?>><?php echo $aoAllocatedInventory; ?></option></select>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6">
+			<div class="form-group"><label>Target Market</label>
+				<div class="select_group"><select class="selectpicker validate-select" name="target_market1"><option value="">Make a selection</option><option value="51" <?php if($aoTargetMarket1=='51'){ echo "selected=selected"; } ?>>Pittsburgh, PA</option></select>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="form-group"><label>Business Location</label>
+				<div class="select_group">
+					<select class="selectpicker validate-select" name="business_location1">
+						<option value="">Make a selection</option>
+						<?php foreach ($customerObj->getAddresses() as $addresses) { ?>
+							<option value="<?php echo $addresses->getId(); ?>" <?php if($addresses->getId()==$aoBusinessLocation1){ echo "selected=selected"; } ?>><?php echo $addresses['location_name']; ?></option>
+						<?php } ?>
+					</select>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sign-up-form">
+<div class="panel panel-default">
+<div class="panel-heading">
+<div class="pull-left">Ad/Offer Information</div>
+</div>
+<div class="panel-body">
+<div class="shippment_address border">
+	<div class="row">
+		<div class="col-md-6">
+			<div class="form-group"><label>Ad/Offer Headline </label>
+				<div class="select_group"><input class="form-control" type="text" name="adoffer_headline1" id="adoffer_headline1" value="<?php echo $aoAdofferHeadline1; ?>"  data-validate='{"required":true}'/></div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="form-group"><label>Ad/Offer Type </label>
+				<div class="select_group"><select class="selectpicker validate-select" name="offer_type1">
+					<option value="">Make a selection</option>
+					<option value="Online" <?php if($aoOfferType1=='Online'){ echo "selected=selected"; } ?>>Online</option>
+					<option value="In-Store" <?php if($aoOfferType1=='In-Store'){ echo "selected=selected"; } ?>>In-Store</option>
+					<option value="Online, In-Store, Both?" <?php if($aoOfferType1=='Online, In-Store, Both?'){ echo "selected=selected"; } ?>>Online, In-Store, Both?</option>
+					</select>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6">
+			<div class="form-group"><label class="remove-astrisk">Promo Code</label>
+				<div class="select_group"><input class="form-control" type="text" name="promo_code1" value="<?php echo $aoPromoCode1; ?>" onchange="generateqr(1)" id="promo_code1"/>
+					<input type="hidden" id="promo_code_img1" name="promo_code_img1" value="<?php echo $aoPromoCodeImg1; ?>"/>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6">
+		<div class="form-group"><label>Expiration Date</label>
+			<div class="select_group">
+				<input type="text" class="form-control input-text required-entry" id="calendar_inputField1" name="expiration_date1" aria-required="true" data-validate='{"required":true}' value="<?php echo $aoExpirationDate1; ?>" placeholder="mm/dd/yy">
+			</div>
+		</div>
+	</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-12">
+			<div class="form-group"><label>Ad/Offer Description</label><div class="select_group"> <textarea class="form-control" placeholder="Message" name="adoffer_description1" data-validate='{"required":true}' ><?php echo $aoAdofferDescription1; ?></textarea></div></div>
+			<div class="form-group"><label>How to Redeem</label><div class="select_group"> <textarea class="form-control" placeholder="Message" name="how_to_redeem1" data-validate='{"required":true}' ><?php echo $aoHowToRedeem1; ?></textarea></div></div>
+			<div class="form-group"><label>Terms &amp; Conditions</label><div class="select_group"> <textarea class="form-control" placeholder="Message" name="terms_conditions1" data-validate='{"required":true}' ><?php echo $aoTermsConditions1; ?></textarea></div></div>
+		</div>
+	</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<?php if($landingPagesCount>1){ ?>
+<div id="menu1" class="tab-pane fade">
+<input type="hidden" value="<?php echo $addofferId2; ?>" name="adoffferid2"/>
+<div class="upload_logo_section">
+<div class="upload_logo_top">Upload Your Logo</div>
+<div class="upload_logo_contain">
+<p>Before you add your Ad/Offer details, please upload a high-resolution version of your logo (EPS,
+AI, PNG, or JPG). Your logo will be printed on all box labels, so please ensure you follow the size
+dimensions (4” x 4” or 6.5” x 3.75”) seen in the text link below in order to receive the best results.</p>
+<div class="image-upload"><label class="ttl_addphoto" for="offerlogo2">Upload Logo</label> <input id="offerlogo2" type="file" name="offerlogo2" onchange="uploadofferlogo(this,'form-validate',500,360,'cover',102400,'myModalimg','myImageModal','offerlogo2-cover','2')"/></div>
+
+<div class="offer-logo-container">
+<div class="image-upload"><label class="ttl_addphoto" for="offerlogoadditional2">PDF/EPS/AI</label> <input id="offerlogoadditional2" type="file" name="offerlogoadditional2" onchange="uploadofferlogoadditional(this,'form-validate',500,360,'cover',102400,'myModalimg','myImageModal','offerlogo2-cover','2')"/>
+</div>
+<div class="uploaded-additional-img2"></div>
+</div>
+
+<a href="javascript:void(0);" type="button" data-toggle="modal" data-target="#logo-dim-popup">View Logo Dimension Options</a></div>
+<input type="hidden" id="logo2" name="logo2" value="<?php echo $aoLogo2; ?>" />
+<input type="hidden" id="logoadditional2" name="logoadditional2" value="<?php echo $aoLogoAdditionl2; ?>" />
+<input type="hidden" id="coupon_unique_url2" name="coupon_unique_url2" value="<?php echo $aoUniqueUrl2; ?>" />
+<input type="hidden" class="coupon_unique_email" id="coupon_unique_email2" name="coupon_unique_email2" value="<?php echo $aoUniqueEmail2; ?>" />
+</div>
+<div class="sign-up-form">
+<div class="panel panel-default">
+<div class="panel-heading">
+<div class="pull-left">Campaign Information</div>
+</div>
+<div class="panel-body">
+<div class="row">
+<div class="col-md-12">
+<div class="form-group"><label class="title-label">Who are you targeting for this campaign?</label>
+<div class="select_group">
+	<select class="selectpicker validate-select" name="targeting_campaign2">
+<option value="1" <?php if($aoTargetingCampaign2=='1'){ echo "selected=selected"; } ?>>New Movers</option>
+<option value="2" <?php if($aoTargetingCampaign2=='2'){ echo "selected=selected"; } ?>>Online Shoppers</option>
+</select>
+</div>
+</div>
+</div>
+</div>
+<div class="shippment_address ">
+
+	<div class="row">
+		<div class="col-md-6">
+			<div class="form-group"><label>Campaign Title</label>
+				<div class="select_group"><input class="form-control" type="text" name="campaign_title2" value="<?php echo $aoCampaignTitle2; ?>" data-validate='{"required":true}'/></div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="form-group"><label>Allocated Inventory</label>
+				<div class="select_group"><select class="selectpicker validate-select" name="allocated_inventory2"><option value="">Make a selection</option><option value="<?php echo $aoAllocatedInventory; ?>" <?php if($aoAllocatedInventory2==$aoAllocatedInventory){ echo "selected=selected"; } ?>><?php echo $aoAllocatedInventory; ?></option></select></div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6">
+			<div class="form-group"><label>Target Market</label>
+				<div class="select_group"><select class="selectpicker validate-select" name="target_market2"><option value="">Make a selection</option><option value="51" <?php if($aoTargetMarket2=='51'){ echo "selected=selected"; } ?>>Pittsburgh, PA</option></select></div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="form-group"><label>Business Location</label>
+				<div class="select_group">
+					<select class="selectpicker validate-select" name="business_location2">
+					<option value="">Make a selection</option>
+					<?php foreach ($customerObj->getAddresses() as $addresses) { ?>
+						<option value="<?php echo $addresses->getId(); ?>" <?php if($addresses->getId()==$aoBusinessLocation2){ echo "selected=selected"; } ?>><?php echo $addresses['location_name']; ?></option>
+					<?php } ?>
+					</select>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+</div>
+</div>
+</div>
+</div>
+<div class="sign-up-form">
+<div class="panel panel-default">
+<div class="panel-heading">
+<div class="pull-left">Ad/Offer Information</div>
+</div>
+<div class="panel-body">
+<div class="shippment_address border">
+
+
+<div class="row">
+	<div class="col-md-6">
+		<div class="form-group"><label>Ad/Offer Headline </label>
+			<div class="select_group"><input class="form-control" type="text" name="adoffer_headline2" id="adoffer_headline2" value="<?php echo $aoAdofferHeadline2; ?>"  data-validate='{"required":true}'/></div>
+		</div>
+	</div>
+	<div class="col-md-6">
+		<div class="form-group"><label>Ad/Offer Type </label>
+			<div class="select_group">
+				<select class="selectpicker validate-select" name="offer_type2">
+					<option value="">Make a selection</option>
+					<option value="Online" <?php if($aoOfferType2=='Online'){ echo "selected=selected"; } ?>>Online</option>
+					<option value="In-Store" <?php if($aoOfferType2=='In-Store'){ echo "selected=selected"; } ?>>In-Store</option>
+					<option value="Online, In-Store, Both?" <?php if($aoOfferType2=='Online, In-Store, Both?'){ echo "selected=selected"; } ?>>Online, In-Store, Both?</option>
+
+				</select>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="row">
+	<div class="col-md-6">
+		<div class="form-group"><label class="remove-astrisk">Promo Code</label>
+			<div class="select_group"><input class="form-control" type="text" name="promo_code2" value="<?php echo $aoPromoCode2; ?>" onchange="generateqr(2)" id="promo_code2"/>
+				<input type="hidden" id="promo_code_img2" name="promo_code_img2" value="<?php echo $aoPromoCodeImg2; ?>"/>
+			</div>
+		</div>
+	</div>
+	<div class="col-md-6">
+		<div class="form-group"><label>Expiration Date</label>
+			<div class="select_group">
+				<input type="text" class="form-control input-text required-entry" id="calendar_inputField2" name="expiration_date2" aria-required="true" data-validate='{"required":true}' value="<?php echo $aoExpirationDate2; ?>" placeholder="mm/dd/yy">
+			</div>
+		</div>
+	</div>
+</div>
+<div class="row">
+	<div class="col-sm-12">
+	<div class="form-group"><label>Ad/Offer Description</label><div class="select_group"> <textarea class="form-control" placeholder="Message" name="adoffer_description2" data-validate='{"required":true}' ><?php echo $aoAdofferDescription2; ?></textarea></div></div>
+	<div class="form-group"><label>How to Redeem</label><div class="select_group"> <textarea class="form-control" placeholder="Message" name="how_to_redeem2" data-validate='{"required":true}' ><?php echo $aoHowToRedeem2; ?></textarea></div></div>
+	<div class="form-group"><label>Terms &amp; Conditions</label><div class="select_group"> <textarea class="form-control" placeholder="Message" name="terms_conditions2" data-validate='{"required":true}' ><?php echo $aoTermsConditions2; ?></textarea></div></div>
+	</div>
+</div>
+
+
+</div>
+</div>
+</div>
+</div>
+
+</div>
+<?php } ?>
+<?php if($landingPagesCount>2){ ?>
+<div id="menu2" class="tab-pane fade">
+<input type="hidden" value="<?php echo $addofferId3; ?>" name="adoffferid3"/>
+<div class="upload_logo_section">
+<div class="upload_logo_top">Upload Your Logo</div>
+<div class="upload_logo_contain">
+<p>Before you add your Ad/Offer details, please upload a high-resolution version of your logo (EPS,
+AI, PNG, or JPG). Your logo will be printed on all box labels, so please ensure you follow the size
+dimensions (4” x 4” or 6.5” x 3.75”) seen in the text link below in order to receive the best results.</p>
+<div class="image-upload"><label class="ttl_addphoto" for="offerlogo3">Upload Logo</label> <input id="offerlogo3" type="file" name="offerlogo3" onchange="uploadofferlogo(this,'form-validate',500,360,'cover',102400,'myModalimg','myImageModal','offerlogo3-cover','3')"/></div>
+
+<div class="offer-logo-container">
+<div class="image-upload"><label class="ttl_addphoto" for="offerlogoadditional3">PDF/EPS/AI</label> <input id="offerlogoadditional3" type="file" name="offerlogoadditional3" onchange="uploadofferlogoadditional(this,'form-validate',500,360,'cover',102400,'myModalimg','myImageModal','offerlogo2-cover','3')"/>
+</div>
+<div class="uploaded-additional-img3"></div>
+</div>
+
+<a href="javascript:void(0);" type="button" data-toggle="modal" data-target="#logo-dim-popup">View Logo Dimension Options</a></div>
+<input type="hidden" id="logo3" name="logo3" value="<?php echo $aoLogo3; ?>" />
+<input type="hidden" id="logoadditional3" name="logoadditional3" value="<?php echo $aoLogoAdditionl3; ?>" />
+<input type="hidden" id="coupon_unique_url3" name="coupon_unique_url3" value="<?php echo $aoUniqueUrl3; ?>" />
+<input type="hidden" class="coupon_unique_email" id="coupon_unique_email3" name="coupon_unique_email3" value="<?php echo $aoUniqueEmail3; ?>" />
+</div>
+<div class="sign-up-form">
+<div class="panel panel-default">
+<div class="panel-heading">
+<div class="pull-left">Campaign Information</div>
+</div>
+<div class="panel-body">
+<div class="row">
+<div class="col-md-12">
+<div class="form-group"><label class="title-label">Who are you targeting for this campaign?</label>
+<div class="select_group">
+	<select class="selectpicker validate-select" name="targeting_campaign3">
+<option value="1" <?php if($aoTargetingCampaign3=='1'){ echo "selected=selected"; } ?>>New Movers</option>
+<option value="2" <?php if($aoTargetingCampaign3=='2'){ echo "selected=selected"; } ?>>Online Shoppers</option>
+</select>
+</div>
+</div>
+</div>
+</div>
+<div class="shippment_address ">
+
+	<div class="row">
+		<div class="col-md-6">
+			<div class="form-group"><label>Campaign Title</label>
+				<div class="select_group"><input class="form-control" type="text" name="campaign_title3" value="<?php echo $aoCampaignTitle3; ?>" data-validate='{"required":true}'/></div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="form-group"><label>Allocated Inventory</label>
+				<div class="select_group"><select class="selectpicker validate-select" name="allocated_inventory3"><option value="">Make a selection</option><option value="<?php echo $aoAllocatedInventory; ?>" <?php if($aoAllocatedInventory3==$aoAllocatedInventory){ echo "selected=selected"; } ?>><?php echo $aoAllocatedInventory; ?></option></select></div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6">
+			<div class="form-group"><label>Target Market</label>
+				<div class="select_group"><select class="selectpicker validate-select" name="target_market3"><option value="">Make a selection</option><option value="51" <?php if($aoTargetMarket3=='51'){ echo "selected=selected"; } ?>>Pittsburgh, PA</option></select></div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="form-group"><label>Business Location</label>
+				<div class="select_group">
+					<select class="selectpicker validate-select" name="business_location3">
+					<option value="">Make a selection</option>
+					<?php foreach ($customerObj->getAddresses() as $addresses) { ?>
+						<option value="<?php echo $addresses->getId(); ?>" <?php if($addresses->getId()==$aoBusinessLocation3){ echo "selected=selected"; } ?>><?php echo $addresses['location_name']; ?></option>
+					<?php } ?>
+					</select>
+				</div>
+			</div>
+		</div>
+	</div>
+
+</div>
+</div>
+</div>
+</div>
+<div class="sign-up-form">
+<div class="panel panel-default">
+<div class="panel-heading">
+<div class="pull-left">Ad/Offer Information</div>
+</div>
+<div class="panel-body">
+<div class="shippment_address border">
+
+
+<div class="row">
+	<div class="col-md-6">
+		<div class="form-group"><label>Ad/Offer Headline </label>
+			<div class="select_group"><input class="form-control" type="text" name="adoffer_headline3" id="adoffer_headline3" value="<?php echo $aoAdofferHeadline3; ?>"  data-validate='{"required":true}'/></div>
+		</div>
+	</div>
+	<div class="col-md-6">
+		<div class="form-group"><label>Ad/Offer Type </label>
+			<div class="select_group">
+				<select class="selectpicker validate-select" name="offer_type3">
+					<option value="">Make a selection</option>
+					<option value="Online" <?php if($aoOfferType3=='Online'){ echo "selected=selected"; } ?>>Online</option>
+					<option value="In-Store" <?php if($aoOfferType3=='In-Store'){ echo "selected=selected"; } ?>>In-Store</option>
+					<option value="Online, In-Store, Both?" <?php if($aoOfferType3=='Online, In-Store, Both?'){ echo "selected=selected"; } ?>>Online, In-Store, Both?</option>
+				</select>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="row">
+	<div class="col-md-6">
+		<div class="form-group"><label class="remove-astrisk">Promo Code</label>
+			<div class="select_group"><input class="form-control" type="text" name="promo_code3" value="<?php echo $aoPromoCode3; ?>" onchange="generateqr(3)" id="promo_code3"/>
+				<input type="hidden" id="promo_code_img3" name="promo_code_img3" value="<?php echo $aoPromoCodeImg3; ?>"/>
+			</div>
+		</div>
+	</div>
+	<div class="col-md-6">
+		<div class="form-group"><label>Expiration Date</label>
+			<div class="select_group">
+				<input type="text" class="form-control input-text required-entry" id="calendar_inputField3" name="expiration_date3" aria-required="true" data-validate='{"required":true}' value="<?php echo $aoExpirationDate3; ?>" placeholder="mm/dd/yy">
+			</div>
+		</div>
+	</div>
+
+
+	<!-- <div class="col-md-6">
+		<div class="form-group"><label>Expiration Date</label>
+			<div class="select_group"><input class="form-control" type="text" name="expiration_date3" placeholder="mm/dd/yy" value="<?php echo $aoExpirationDate3; ?>"  data-validate='{"required":true}'/></div>
+		</div>
+	</div> -->
+</div>
+<div class="row">
+	<div class="col-sm-12">
+		<div class="form-group"><label>Ad/Offer Description</label> <div class="select_group"><textarea class="form-control" placeholder="Message" name="adoffer_description3" data-validate='{"required":true}' ><?php echo $aoAdofferDescription3; ?></textarea></div></div>
+		<div class="form-group"><label>How to Redeem</label> <div class="select_group"><textarea class="form-control" placeholder="Message" name="how_to_redeem3" data-validate='{"required":true}' ><?php echo $aoHowToRedeem3; ?></textarea></div></div>
+		<div class="form-group"><label>Terms &amp; Conditions</label><div class="select_group"> <textarea class="form-control" placeholder="Message" name="terms_conditions3" data-validate='{"required":true}' ><?php echo $aoTermsConditions3; ?></textarea></div></div>
+	</div>
+</div>
+
+
+
+</div>
+</div>
+</div>
+</div>
+</div>
+<?php } ?>
+</div>
+</div>
+<div class="btn-group">
+<div class="add-offer-bottom-links"><a href="javascript:void(0);" onclick="offerpreview();" data-toggle="modal" data-target="#agency-popup">Preview Box Label</a> | <a href="javascript:void(0);" onclick="PreviewOfferPage();">Preview Offer Page</a></div>
+<button class="btn btn-grey" type="button" onclick="savethisoffer();">Save Ad/Offer</button> <button class="btn btn-border" type="button" onclick="offersendemail();">Publish Ad/Offer</button></div>
+</div>
+</div>
+</div>
+</form>
+</section>
+<div id="agency-popup" class="modal fade">
+<div class="modal-dialog"><!-- Modal content-->
+<div class="modal-header">
+<div class="pull-left ad-offer-popup-title">{Ad/Offer Title}</div>
+<div class="pull-right"><button class="close" type="button" data-dismiss="modal"><i class="fa fa-times fa-2x">&nbsp;</i></button></div>
+</div>
+<div class="modal-content">
+<div class="agency_popup">
+<div class="row">
+<div class="col-sm-8">
+<div class="popup-title">YOUR FREE BOX IS SPONSORED BY:</div>
+<div class="agency_left"><img src="<?php echo $mediaUrl.'wysiwyg/logo-Popup.jpg'; ?>" alt="" class="offerlogo-popup" /></div>
+</div>
+<div class="col-sm-4">
+<div class="agency_black">
+<h2 class="dynamic-headline">We provide the agency skills without the agency bills. Get 25% off today!</h2>
+<p>To download this coupon, please visit</p>
+<p><a href="#" class="unique-url"><?php echo $this->getBaseUrl(); ?>unique-url</a></p>
+<p>or scan the code below:</p>
+<div class="agency_logo"><span><img src="<?php echo $mediaUrl.'wysiwyg/logo-2_popup.jpg'; ?>" alt="" class="coupon-qrcode" /></span><span><img src="<?php echo $mediaUrl.'wysiwyg/logo-1_popup.jpg'; ?>" alt="" /></span></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="logo-dim-popup" class="modal fade">
+<div class="modal-dialog"><!-- Modal content-->
+<div class="modal-header">
+<div class="pull-left">Logo Dimension Options &amp; Editable Areas</div>
+<div class="pull-right"><button class="close" type="button" data-dismiss="modal"><i class="fa fa-times fa-2x">&nbsp;</i></button></div>
+</div>
+<div class="modal-content">
+<div class="agency_popup">
+<div class="row">
+<div class="col-sm-8">
+<div class="popup-title">YOUR FREE BOX IS SPONSORED BY:</div>
+<div class="agency_left"><img src="<?php echo $mediaUrl.'wysiwyg/logo-dim.png'; ?>" alt="" /></div>
+</div>
+<div class="col-sm-4">
+<div class="agency_black">
+<h2 class="dim-h2">Your dynamic ad/offer headline goes here</h2>
+<p>To download this coupon, please visit</p>
+<p><a href="#"><?php echo $this->getBaseUrl(); ?>unique-url</a></p>
+<p>or scan the code below:</p>
+<div class="agency_logo"><span><img src="<?php echo $mediaUrl.'wysiwyg/logo-2_popup.jpg'; ?>" alt="" /></span><span><img src="<?php echo $mediaUrl.'wysiwyg/logo-1_popup.jpg'; ?>" alt="" /></span></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p><?php echo $this->getLayout()->createBlock('Magento\Cms\Block\Block')->setBlockId('account-new-footer')->toHtml();?></p>
+<script>
+function disablepublish(currentsel){
+	require(['jquery'],function($){
+		
+		var email = $("#coupon_unique_email"+currentsel).val();
+		if (email != '1') {
+			$(".btn-border").removeAttr('disabled');
+			
+		}else{
+		$(".btn-border").attr('disabled', 'disabled');
+		}
+	});
+}
+</script>
+
+<script>
+require(['jquery'],function($){
+	var currentsel = 1;
+		if($(".tab-content #home").hasClass("active")){			
+			currentsel = 1;
+		}else if($(".tab-content #menu1").hasClass("active")){
+			currentsel = 2;
+		}else if($(".tab-content #menu2").hasClass("active")){
+			currentsel = 3;
+		}else{
+			currentsel = 1;
+		}
+	var email = $("#coupon_unique_email"+currentsel).val();
+	
+	if (email != '1') {
+		$(".btn-border").removeAttr('disabled');
+		
+	}else{
+	$(".btn-border").attr('disabled', 'disabled');
+	}
+});
+
+</script>
+
+<script>
+function offersendemail(){
+	require(['jquery'],function($){ 
+
+		var currentsel = 1;
+		if($(".tab-content #home").hasClass("active")){			
+			currentsel = 1;
+		}else if($(".tab-content #menu1").hasClass("active")){
+			currentsel = 2;
+		}else if($(".tab-content #menu2").hasClass("active")){
+			currentsel = 3;
+		}else{
+			currentsel = 1;
+		}
+		//alert(currentsel); 
+		
+		//return false;
+		if($("#logo"+currentsel).val()==null || $("#logo"+currentsel).val()==''){
+			alert("Before you add your Ad/Offer details, please upload a high-resolution version of your logo");
+			return false;
+		}
+		$(".coupon_unique_email").val('0');
+		$("#coupon_unique_email"+currentsel).val('1');
+		
+		$(".addoffermail").submit();
+
+
+
+	});
+}
+function savethisoffer(){
+	require(['jquery'],function($){ 
+
+		var currentsel = 1;
+		if($(".tab-content #home").hasClass("active")){			
+			currentsel = 1;
+		}else if($(".tab-content #menu1").hasClass("active")){
+			currentsel = 2;
+		}else if($(".tab-content #menu2").hasClass("active")){
+			currentsel = 3;
+		}else{
+			currentsel = 1;
+		}
+		$(".coupon_unique_email").val('0');
+		if($("#logo"+currentsel).val()==null || $("#logo"+currentsel).val()==''){
+			alert("Before you add your Ad/Offer details, please upload a high-resolution version of your logo");
+			return false;
+		}else{
+			$(".addoffermail").submit();
+		}
+	});
+}
+</script>
+
+
+<script>
+function offerpreview(){
+	require(['jquery'],function($){
+		var currentsel = 1;
+		if($(".tab-content #home").hasClass("active")){
+			currentsel = 1;
+		}else if($(".tab-content #menu1").hasClass("active")){
+			currentsel = 2;
+		}else if($(".tab-content #menu2").hasClass("active")){
+			currentsel = 3;
+		}else{
+			currentsel = 1;
+		}
+		$(".dynamic-headline").text($("#adoffer_headline"+currentsel).val());
+		$(".offerlogo-popup").attr("src","<?php echo $mediaUrl; ?>"+$("#logo"+currentsel).val());
+		$(".coupon-qrcode").attr("src","<?php echo $mediaUrl; ?>"+$("#promo_code_img"+currentsel).val());
+		
+		if($("#coupon_unique_url"+currentsel).val()=='unique-url'){			
+			$(".unique-url").attr("href","#");
+			$(".unique-url").text("<?php echo $this->getBaseUrl(); ?>unique-url");
+		}else{
+			$(".unique-url").attr("href","<?php echo $this->getBaseUrl(); ?>businesses/<?php echo $businessName; ?>"+"/coupon-details?coupon="+$("#coupon_unique_url"+currentsel).val());
+			$(".unique-url").text("<?php echo $this->getBaseUrl(); ?>businesses/<?php echo $businessName; ?>"+"/coupon-details?coupon="+$("#coupon_unique_url"+currentsel).val());
+		}	
+		
+		$(".ad-offer-popup-title").text("Ad/Offer #"+currentsel);
+	});
+}
+function uploadofferlogo(filex,formid,maxheight,minheight,imgx,imagesize,modalid,modalclass,inputid,currentselection){
+	
+	var minwidth1 = 384;
+	var minheight1 = 384;
+	
+	var minwidth2 = 624;
+	var minheight2 = 360;
+	
+	require(['jquery'],function($){
+		var filename = $('#offerlogo'+currentselection).val();
+	    filename = filename.replace(/\\/g, "/");
+		var finalfilename = filename.substring(filename.lastIndexOf('/') + 1, filename.length);
+		
+		$(".currentselection").val(currentselection);
+		var file = filex.files[0];
+		var fileValid = false;
+		var ext = file.name.split('.').pop().toLowerCase();
+		if($.inArray(ext, ['png','jpg','jpeg']) == -1) {
+			openModal("<p>File format not supported. File type must be '.jpg','.jpeg' or '.png'</p>",formid,modalid,modalclass,inputid);
+        	return false;
+		}
+		
+		else if(file.type.indexOf("image") == -1) {
+			openModal("<p>File not supported</p>",formid,modalid,modalclass,inputid);
+        	return false;
+	    }
+	    else if(file.size > imagesize) {
+	    	openModal("<p>Image too big (max 100kb)</p>",formid,modalid,modalclass,inputid);
+	        return false;
+	    }
+	    else if(file) {
+			//$("#"+formid+" .load-logo-content").show();
+	        var img = new Image();
+	        img.src = window.URL.createObjectURL(file);
+	        img.onload = function() {
+	            var width = img.naturalWidth,
+	                height = img.naturalHeight;
+
+	            window.URL.revokeObjectURL( img.src );
+				
+				var aspectratio = width / height;
+				
+	            //if(height < minheight || height > maxheight)
+	            //if(height < minheight1 || width < minwidth1 || height < minheight2 || width < minwidth2 || (aspectratio<1.73 || aspectratio>1.74 ))
+	            if(aspectratio == 1){
+	            	if(height < minheight1 || width < minwidth1){
+						openModal('<p>The ideal sizes of the logo should be contained within 4” x 4” or 6.5” x 3.75”',formid,modalid,modalclass,inputid);
+						return false;
+					}
+	            	
+				}
+				else if(height < minheight2 || width < minwidth2 || (aspectratio<1.73 || aspectratio>1.74 )){
+					openModal('<p>The ideal sizes of the logo should be contained within 4” x 4” or 6.5” x 3.75”',formid,modalid,modalclass,inputid);
+					return false;
+				}
+				else
+				{
+						
+				}
+				$("#"+formid+" .load-logo-content").show();
+					var formData = new FormData($("#"+formid+"")[0]);
+					
+				    formData.append('formData', file);
+				    
+					$.ajax(
+					{
+						type: 'post',
+						url: '<?php echo $this->getBaseUrl(); ?>businesses/upload/uploadaologo',
+						data: formData,
+						processData: false,
+			    		contentType: false,
+			    		dataType: 'json',
+						success:function(data)
+						{
+							$("#logo"+currentselection).val(data.image);
+				    		$("#"+formid+" .load-logo-content").hide();
+						},	
+					});	
+	        };
+	    }
+		
+	});
+}
+
+function uploadofferlogoadditional(filex,formid,maxheight,minheight,imgx,imagesize,modalid,modalclass,inputid,currentselection){
+	
+	require(['jquery'],function($){
+		
+		$(".currentselection").val(currentselection);
+		var file = filex.files[0];
+		
+		var ext = file.name.split('.').pop().toLowerCase();
+		if($.inArray(ext, ['eps','ai','pdf']) == -1) {
+			openModal("<p>File format not supported. File type must be '.pdf','.eps' or '.ai'</p>",formid,modalid,modalclass,inputid);
+        	return false;
+		}		
+			/*var filename = $('#offerlogoadditional'+currentselection).val();
+		    filename = filename.replace(/\\/g, "/");
+			var finalfilename = filename.substring(filename.lastIndexOf('/') + 1, filename.length);
+			$(".uploaded-additional-img"+currentselection).text(finalfilename);*/
+					
+			$("#"+formid+" .load-logo-content").show();
+				var formData = new FormData($("#"+formid+"")[0]);
+				
+			    formData.append('formData', file);
+			    
+				$.ajax(
+				{
+					type: 'post',
+					url: '<?php echo $this->getBaseUrl(); ?>businesses/upload/uploadaologoadditional',
+					data: formData,
+					processData: false,
+		    		contentType: false,
+		    		dataType: 'json',
+					success:function(data)
+					{
+						$("#logoadditional"+currentselection).val(data.image);
+			    		$("#"+formid+" .load-logo-content").hide();
+					},	
+				});	
+	        });
+}
+function generatePassword() {
+    var length = 26, charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", retVal = "";
+    for (var i = 0, n = charset.length; i < length; ++i) {
+        retVal += charset.charAt(Math.floor(Math.random() * n));
+    }
+    return retVal;
+}
+function PreviewOfferPage() {
+	require(['jquery'],function($){
+		var currentsel = 1;
+		if($(".tab-content #home").hasClass("active")){
+			currentsel = 1;
+		}else if($(".tab-content #menu1").hasClass("active")){
+			currentsel = 2;
+		}else if($(".tab-content #menu2").hasClass("active")){
+			currentsel = 3;
+		}else{
+			currentsel = 1;
+		}
+		
+		if($("#coupon_unique_url"+currentsel).val()=='unique-url'){			
+			alert("In order to preview the offer page, first save this offer!")
+		}else{
+			openurl = "<?php echo $this->getBaseUrl(); ?>businesses/<?php echo $businessName; ?>"+"/coupon-details?coupon="+$("#coupon_unique_url"+currentsel).val();
+			window.open(openurl, '_blank', 'width=auto,height=auto');
+		}
+	})    
+}
+function generateqr(currentselection){
+	require(['jquery'],function($){		
+		 var couponcode = $("#promo_code"+currentselection).val();
+		 var encryption = generatePassword();
+		 $.ajax({
+		        url: "<?php echo $this->getBaseUrl(); ?>generateqr.php",
+		        type: "post",
+		        data: 'couponcode='+couponcode+'&encryption='+encryption,
+		        success: function (response) {
+		        	$("#promo_code_img"+currentselection).val('business/couponcode/'+encryption+couponcode+'.png');		        	
+		        	$("#promo_code_img"+currentselection).trigger("change");
+		        	//alert($("#promo_code_img"+currentselection).val());
+		        }
+		    });
+	});		
+}
+</script>
+<script>
+     require([
+          "jquery",
+          "mage/calendar"
+     ], function($){
+         $("#calendar_inputField1").calendar({
+              buttonText:"<?php echo __('Select Date') ?>",
+         });
+       });
+</script>
+<script>
+     require([
+          "jquery",
+          "mage/calendar"
+     ], function($){
+         $("#calendar_inputField2").calendar({
+              buttonText:"<?php echo __('Select Date') ?>",
+         });
+       });
+</script>
+<script>
+     require([
+          "jquery",
+          "mage/calendar"
+     ], function($){
+         $("#calendar_inputField3").calendar({
+              buttonText:"<?php echo __('Select Date') ?>",
+         });
+       });
+</script>
+<?php
+//540,315
+//335,335
+?>
+<style>
+.itsinital{
+	pointer-events: none;
+    cursor: not-allowed;
+}
+.load-logo-content {
+    min-height: auto;
+    position: absolute;
+    top: 265px;
+    left: 0;
+    right: 0;
+    display: none;
+}
+.load-logo-content .loader{
+	left: 0;
+	right: 0;
+}
+#agency-popup .agency_popup .agency_left {
+    padding: 40px 0;
+}
+</style>

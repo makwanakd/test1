@@ -1,0 +1,455 @@
+<?php $mediaUrl = $block->getMediaUrl(); ?>
+<?php
+$customerID = $this->getCustomerId();
+$customerGroupId = 4;
+$isCurrentBusinessUser = FALSE;
+if($customerID){
+	$customerInfo = $this->getCustomerDetails($customerID); 
+	$customerGroupId = $customerInfo->getGroupId();
+}
+
+
+$urlInterface = \Magento\Framework\App\ObjectManager::getInstance()->get('Magento\Framework\UrlInterface');
+ $urlInterface->getCurrentUrl(); 
+ ?>
+<?php
+if(!isset($_GET['coupon'])){
+	header('Location: '.$this->getBaseUrl().'');
+	exit();
+}
+$couponCollection = $this->getCollectionAdOfferByUrl($_GET['coupon'],$this->getBusinessId());
+$adoffersId = FALSE;
+foreach($couponCollection as $coupons){
+	$adoffersId = $coupons->getId();
+	if($coupons->getBusinessuserId()==$customerID){
+		$customerGroupId = 1;
+		$isCurrentBusinessUser = TRUE;
+	}
+}
+if($adoffersId==FALSE){
+	header('Location: '.$this->getBaseUrl().'');
+	exit();
+}
+//$_GET['coupon'] = coupon_unique_url
+//7sd8tt7stpsd879
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$coupon = $objectManager->create('Icecube\Businesses\Model\Adoffers'); 
+$couponDetail = $coupon->load($adoffersId);
+$businessuserId =  $couponDetail->getBusinessuserId(); 
+if($businessuserId){
+	$customerObj = $objectManager->create('Magento\Customer\Model\Customer')->load($businessuserId);
+	$businessName = $customerObj->getBusinessName();
+}
+if($couponDetail->getBusinessId()){
+	$businessDetail = $objectManager->create('Icecube\Businesses\Model\Index');
+	$businessDetail->load($couponDetail->getBusinessId(), 'business_id');
+	$companyDescription = $businessDetail->getCompanyDescription(); 
+	//echo $couponDetail->getBusinessId(); die;
+}
+if($couponDetail->getBusinessLocation()){
+$address = $objectManager->create('Magento\Customer\Model\Address')->load($couponDetail->getBusinessLocation());
+//echo $address->getStreet(); die;
+$street = $address['street']; 
+$arr = explode("\n", $street);
+  	$street1 = '';
+  	$street2 = '';
+  	if(isset($arr['0'])){
+   	 	$street1 = $arr['0'];
+  	}
+  	if(isset($arr['1'])){
+    	$street2 = $arr['1']; 
+  	}	
+}
+$currentBusiness = $this->getBusiness();
+$currentBusinessUrl = $currentBusiness->getBusinessPageUrl();
+?>
+<?php
+if($customerID && $customerGroupId!=4 && $isCurrentBusinessUser==FALSE){
+	
+	$adoffersUpdate = $objectManager->create('Icecube\Businesses\Model\Adoffers')->load($adoffersId);
+	$organicVisit = $adoffersUpdate->getOrganicVisits() + 1;
+	$referralVisit = $adoffersUpdate->getReferralVisits() + 1;
+	
+	if(isset($_COOKIE[$_GET['coupon']])){		
+		if($_COOKIE[$_GET['coupon']]=="organic_visit"){
+			$adoffersUpdate->setOrganicVisits($organicVisit);
+		}
+	}
+	else{
+		$adoffersUpdate->setReferralVisits($referralVisit);
+	}
+	$adoffersUpdate->save();
+}
+?>
+<?php //echo $block->getLayout()->createBlock('Magento\Cms\Block\Block')->setBlockId('account-new-header')->toHtml();?>
+<section class="admin_main_content">
+<div class="container">
+<div class="row"><?php
+			echo $this->getLayout()->createBlock("Icecube\Businesses\Block\Frontend\Index")->setTemplate("Icecube_Businesses::sidebar.phtml")->toHtml();
+			?>
+<div class="col-sm-9 pull-right" id="print-coupon-section">
+<div class="headline_block">
+<div class="row">
+<div class="col-sm-8">
+<h2><?php echo $couponDetail->getAdofferHeadline(); ?></h2>
+<p><?php echo $couponDetail->getAdofferDescription(); ?></p>
+<h3><?php echo $address->getLocationName();  ?></h3>
+<?php //echo $address->getStreet(); ?>
+<ul>
+<li><?php echo $street1; ?></li>
+<li><?php echo $street2; ?></li>
+<li><?php echo $address->getCity(); ?>, <?php echo $address->getRegion(); ?> <?php echo $address->getPostcode(); ?></li>
+</ul>
+<div class="bottom_links">
+<ul>
+<li><a href="tel:<?php echo $address->getTelephone(); ?>"><?php echo $address->getTelephone(); ?></a></li>
+<?php if($address->getWebsiteName()){ ?><li><a target="_blank" href="<?php echo $address->getWebsiteName(); ?>"><?php echo $address->getWebsiteName(); ?></a></li> <?php } ?>
+</ul>
+</div>
+</div>
+<div class="col-sm-4">
+<div class="scan_block">
+	<?php if($customerID && $customerGroupId!=4){ ?>
+		<img src="<?php echo $mediaUrl; ?><?php echo $couponDetail->getPromoCodeImg(); ?>" alt="" />
+	<?php }else{ ?>
+		<img src="<?php echo $mediaUrl; ?>wysiwyg/scan_code.png" alt="" />
+	<?php } ?>
+	<?php if($customerID && $customerGroupId!=4){ ?>
+		<h3>Promo Code: <?php echo $couponDetail->getPromoCode(); ?></h3>
+	<?php }else{ ?>
+		<h3>Promo Code: <?php echo "#"; ?></h3>
+	<?php 	
+	}
+	?>
+<div class="ttl_online">
+<?php if($couponDetail->getOfferType() == "Online, In-Store, Both?") {
+ echo "Valid In-Store &amp; Online"; 
+}?>
+<?php if($couponDetail->getOfferType() == "In-Store") {
+ echo "Valid In-Store"; 
+}?>
+<?php if($couponDetail->getOfferType() == "Online") {
+ echo "Valid Online"; 
+}?>
+
+
+
+</div>
+<img src="<?php echo $mediaUrl; ?>wysiwyg/qr_logo.png" alt="" /></div>
+</div>
+</div>
+</div>
+<div class="coupon_details_block">
+<div class="btn-group">
+	<?php if($customerID && $customerGroupId!=4){ ?>
+		<?php /*?><button class="btn btn-border" type="button" onclick="downloadPdf();">Download Offer</button><?php*/ ?>
+		<a href="<?php echo ''.$this->getBaseUrl().'businesses/'.$currentBusinessUrl.'/coupon-details-download?coupon='.$_GET['coupon']; ?>" class="btn btn-border">Download Offer</a>
+		<button class="btn btn-border" onclick="printPdf('<?php echo $currentBusinessUrl; ?>','<?php echo $_GET['coupon']; ?>');">Print Offer</button>
+	<?php }else{ ?>
+		<button class="btn btn-border download-offer" type="button" data-toggle="modal" data-target="#myModal">Download Offer</button>
+		<button class="btn btn-border" type="button" data-toggle="modal" data-target="#myModal">Print Offer</button>
+	<?php } ?>	
+</div>
+<div class="coupon_details">
+<h3>How to Redeem This Offer</h3>
+<p><?php echo $couponDetail->getHowToRedeem(); ?></p>
+</div>
+<div class="coupon_details">
+<h3>Terms &amp; Conditions</h3>
+<p><?php echo $couponDetail->getTermsConditions(); ?></p>
+</div>
+<div class="coupon_details">
+<h3>About <?php echo $businessName; ?></h3>
+<p><?php echo $companyDescription;  ?></p>
+</div>
+</div>
+
+<div class="pdfclass" id="pdfclass">
+<style>
+@media print{
+	.scan_block {
+	    width: 100% !important;
+	    height: auto !important;
+	    float: left !important;
+	    margin: 0px !important;
+	    padding: 30px 30px 40px !important;
+	    background: #000000 !important;
+	    text-align: center !important;
+	}
+	.headline_block .scan_block h3 {
+	    color: #f58220 !important;
+	    float: left !important;
+	    font-family: "Open Sans";
+	    font-size: 20px !important;
+	    font-weight: bold !important;
+	    letter-spacing: 0 !important;
+	    margin: 15px 0 !important;
+	    padding: 0 !important;
+	    text-align: center !important;
+	    width: 100% !important;
+	}	
+	.ttl_online {
+	    margin: 0px 0px 60px !important;
+	    padding: 0px !important;
+	    font-size: 14px !important;
+	    text-align: center !important;
+	    color: #fff !important;
+	    font-weight: 300 !important;
+	}
+	.btn-group{
+		display:none !important;
+	}
+}
+.popup-from-adoffer-page .page-header,.popup-from-adoffer-page .inner_footer, .popup-from-adoffer-page .button_block, .popup-from-adoffer-page .page.messages, .popup-from-adoffer-page .admin_main_content .col-sm-3{
+	display: none;
+}
+.popup-from-adoffer-page .admin_main_content .col-sm-9 .headline_block, .popup-from-adoffer-page .admin_main_content .col-sm-9 .coupon_details_block{
+	display: none;
+}
+.popup-from-adoffer-page .admin_main_content .col-sm-9 {
+    width: 78%;
+    float: none !important;
+    margin: 0 auto;
+}
+.popup-from-adoffer-page .coupon_details_block > .coupon_details {
+    border-top: none;
+}
+.popup-from-adoffer-page .coupon_details_block .btn-group {
+    display: none;
+}
+.pdfclass{
+	display: none;
+}
+.popup-from-adoffer-page .pdfclass{
+	display: block;
+}
+</style>
+
+	<table style="width: 900px; margin: 40px auto 0;">
+			<tr style="border: 1px dashed #ddd; float: left; border-radius: 5px;">
+				<td style="width: 560px; margin-right: 20px; float: left; padding: 0px 20px;">
+					<table >
+						<tr>
+							<td style="color: #221e1f; display: block; font-family: 'montserratregular'; font-size: 28px; font-weight: bolder; height: auto; letter-spacing: 0; line-height: 38px; margin: 25px 0 30px; text-align: left; width: 100%;"><?php echo $couponDetail->getAdofferHeadline(); ?></td>
+						</tr>
+						<tr>
+							<td style="color: #221e1f; width: 100%; height: auto; margin: 0; padding: 0px; display: block; text-align: left; line-height: 25px; font-size: 16px; font-family: 'Open Sans', sans-serif; font-weight: normal;"><?php echo $couponDetail->getAdofferDescription(); ?>
+							</td>
+						</tr>
+
+						<tr>
+							<td style="color: #221e1f; font-family: 'Open Sans'; font-size: 16px; font-weight: bold; margin: 35px 0 0; padding: 0; text-align: left; float: left;">
+								<?php echo $address->getLocationName();  ?>
+							</td>
+						</tr>
+						<tr>
+							<td style="margin: 0px; padding: 0px; text-align: left; color: #3a3635; font-family: 'Open Sans'; font-size: 15px; font-weight: normal;">
+								<?php echo $street1; ?>
+							</td>
+						</tr>
+						<tr>
+							<td style="margin: 0px; padding: 0px; text-align: left; color: #3a3635; font-family: 'Open Sans'; font-size: 15px; font-weight: normal;">
+								<?php echo $street2; ?>
+							</td>	
+						</tr>
+						<tr>
+							<td style="margin: 0px; padding: 0px; text-align: left; color: #3a3635; font-family: 'Open Sans'; font-size: 15px; font-weight: normal;">
+								<?php echo $address->getCity(); ?>, <?php echo $address->getRegion(); ?> <?php echo $address->getPostcode(); ?>
+							</td>
+						</tr>
+						<tr style="margin: 15px 0 30px; float:left;">
+							<td style="margin: 0px; padding: 0px; text-align: left; color: #3a3635; font-family: 'Open Sans'; font-size: 14px; font-weight: bold;">
+								<?php echo $address->getTelephone(); ?>
+								<?php if($address->getWebsiteName()){ ?> |<?php  echo $address->getWebsiteName(); ?></a></li> <?php } ?>
+							</td>
+						</tr>
+
+
+
+					</table>
+					
+				</td>
+				
+					
+					<td style="float:right; padding: 30px; text-align: center; background-color:#221e1f; -webkit-print-color-adjust: exact; color-adjust: exact; " bgcolor="#221e1f">
+						<table>
+							<tr>
+								<td>
+								<?php if($customerID && $customerGroupId!=4){ ?>
+									<img src="<?php echo $mediaUrl; ?><?php echo $couponDetail->getPromoCodeImg(); ?>" alt="" />
+								<?php }else{ ?>
+									<img src="<?php echo $mediaUrl; ?>wysiwyg/scan_code.png" alt="" />
+								<?php } ?>
+								</td>
+							</tr>
+							<tr>
+							<td style="width: 200px; float:right; color: #f58220; font-family: 'Open Sans'; font-size: 20px; font-weight: bold; letter-spacing: 0; margin: 15px 0; padding: 0; text-align: center;">
+
+								<?php if($customerID && $customerGroupId!=4){ ?>
+									Promo Code: <?php echo $couponDetail->getPromoCode(); ?>
+								<?php }else{ ?>
+									Promo Code: <?php echo "#"; ?>
+								<?php 	
+								}
+								?>
+
+							</td>
+							</tr>
+							<tr>
+							<td style="width: 200px; float:right; margin: 0px 0px 60px; padding: 0px; font-size: 14px; text-align: center; color: #ffffff; font-weight: 300;" >
+							<div style="color: #ffffff;">
+							<font color="#ffffff">
+								<?php if($couponDetail->getOfferType() == "Online, In-Store, Both?") {
+								 echo "Valid In-Store &amp; Online"; 
+								}?>
+								<?php if($couponDetail->getOfferType() == "In-Store") {
+								 echo "Valid In-Store"; 
+								}?>
+								<?php if($couponDetail->getOfferType() == "Online") {
+								 echo "Valid Online"; 
+								}?>
+							</font>
+							</div>
+							</td>
+							</tr>
+							<tr>
+							<td style="width: 200px; float:right; text-align: center"><img src="<?php echo $mediaUrl; ?>wysiwyg/qr_logo.png" alt=""></td>
+							</tr>
+						</table>
+					</td>
+				
+			</tr>
+			<tr style="margin-top: 50px; float:left;">
+				<td colspan="2">
+					<table>
+						<tr style="text-align: left; float: left; height: auto; margin: 0; padding: 35px 0 0; width: 100%;">
+							<td style="font-size: 18px; font-weight: bold; text-align: left; color: #221e1f; display: inline-block; margin: 0px 0px 25px 0px; padding: 0px; font-family: 'montserratextra_bold';">
+								How to Redeem This Offer
+							</td>
+						</tr>
+						<tr>
+							<td style="font-size: 14px; font-weight: normal; text-align: left; color: #221e1f; display: block; margin: 0px 0px 35px 0px; padding: 0px; font-family: 'Open Sans', sans-serif; line-height: 22px;"><?php echo $couponDetail->getHowToRedeem(); ?>
+
+							</td>
+						</tr>
+						<tr style="text-align: left; float: left; height: auto; margin: 0; padding: 35px 0 0; width: 100%;">
+							<td style="font-size: 18px; font-weight: bold; text-align: left; color: #221e1f; display: inline-block; margin: 0px 0px 25px 0px; padding: 0px; font-family: 'montserratextra_bold';">
+								Terms & Conditions
+							</td>
+						</tr>
+						<tr>
+							<td style="font-size: 14px; font-weight: normal; text-align: left; color: #221e1f; display: block; margin: 0px 0px 35px 0px; padding: 0px; font-family: 'Open Sans', sans-serif; line-height: 22px;"><?php echo $couponDetail->getTermsConditions(); ?>
+
+						</td>
+						</tr>
+						<tr style="text-align: left; float: left; height: auto; margin: 0; padding: 35px 0 0; width: 100%;">
+							<td style="font-size: 18px; font-weight: bold; text-align: left; color: #221e1f; display: inline-block; margin: 0px 0px 25px 0px; padding: 0px; font-family: 'montserratextra_bold';">
+								About <?php echo $businessName; ?>						
+							</td>
+						</tr>
+						<tr>
+							<td style="font-size: 14px; font-weight: normal; text-align: left; color: #221e1f; display: block; margin: 0px 0px 35px 0px; padding: 0px; font-family: 'Open Sans', sans-serif; line-height: 22px;"><?php echo $companyDescription;  ?>
+
+						</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+		</table>
+</div>
+</div>
+</div>
+</div>
+</section>
+<div class="button_block">
+	<div id="myModal" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content coupon-detail-login">
+			<form class="form form-login"
+              action="<?php echo $this->getBaseUrl(); ?>customer/account/loginPost/"
+              method="post"
+              id="login-form"
+              data-mage-init='{"validation":{}}'>
+           		 <?php echo $block->getBlockHtml('formkey'); ?>
+				<div class="login_box">
+					<h2>You must log in to review the details of this offer.</h2>
+					<input type="hidden" name="coupon-detail-url" value="<?php echo $urlInterface->getCurrentUrl(); ?>">
+
+					<div class="select_group border first">
+						<input name="login[username]" value="" autocomplete="off" id="email" type="email" class="form-control" placeholder="Email" data-validate="{required:true, 'validate-email':true}">
+					</div>
+					<div class="select_group border">
+						<input name="login[password]" type="password" autocomplete="off" class="form-control" id="pass" title="Password" data-validate="{required:true}" placeholder="Password">
+					</div>
+					<div class="select_group border">
+						<input class="btn_login" name="" type="submit" value="Log In" autocomplete="off">
+					</div>
+					<div class="ttl_forgot"><a href="<?php echo $this->getBaseUrl(); ?>customer/account/forgotpassword/">Forgot your password? Recover it </a> <br /><a href="<?php echo $this->getBaseUrl(); ?>signup/">New Customer</a></div>					
+				</div>
+			</form>
+			</div>
+		</div>
+	</div>
+</div>
+<p><?php echo $block->getLayout()->createBlock('Magento\Cms\Block\Block')->setBlockId('account-new-footer')->toHtml();?></p>
+<script src="<?php echo $this->getBaseUrl(); ?>pub/static/frontend/Magento/freeboxes/en_US/js/html2canvas.js"></script>
+<script>
+require(['jquery'],function($){
+	$(document).ready(function() {
+	   $(".download-offer").trigger('click');
+	});
+});
+function printPdf(businessUrl, couponUrl){
+	var xhttp = new XMLHttpRequest();
+	xhttp.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			
+		}
+	};
+	xhttp.open("GET", '<?php echo $this->getBaseUrl(); ?>businesses/'+businessUrl+'/coupon-details-printpdf?coupon='+couponUrl, true);
+	xhttp.send();	
+	
+	var divToPrint = document.getElementById('pdfclass');
+	var newWin=window.open('','Print-Window');
+	newWin.document.open();
+	newWin.document.write('<html><body onload="window.print()">'+divToPrint.innerHTML+'</body></html>');
+	newWin.document.close();
+	setTimeout(function(){newWin.close();},10);
+}
+function downloadPdf(){
+	require(['jquery'],function($){
+		var element = $("#pdfclass"); // global variable
+		var getCanvas; // global variable
+		
+		html2canvas(element, {
+	         onrendered: function (canvas) {
+	                /*$("#previewImage").append(canvas);*/
+	                getCanvas = canvas;
+	                var imgData = canvas.toDataURL('image/jpeg');
+	                //alert(imgData);
+	                
+	                /*$("#textareacustomizeimage").val(imgData);
+	                var passdata = $("#textareacustomizeimage").val();*/
+	                var passdata = imgData;
+                	$.ajax({
+						type: "POST",	
+						dataType: "json",
+						url: "<?php echo $this->getBaseUrl(); ?>printpdf.php", 
+						data : "productimghtml=" + passdata + "&imagesaved=front",		
+						success: function(result){
+							//alert(result.filename);
+							//$(".full-SashImage-back .SashImage-back input").val(result.filename);
+							
+							
+						} 
+					});
+	               
+	             }
+	            
+	         });
+	});
+}
+if (window.opener) {
+	document.documentElement.className += " popup-from-adoffer-page";
+}
+</script>

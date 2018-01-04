@@ -1,0 +1,545 @@
+<?php
+	$customerGroupid = 'not-businessuser';
+	$objectManager = \Magento\Framework\App\ObjectManager::getInstance(); 
+ 	$customerSession = $objectManager->get('Magento\Customer\Model\Session');
+	if($customerSession->isLoggedIn()) {
+        $customer = $customerSession->getCustomer(); 
+        $customerGroupid = $customer->getGroupId();
+    }
+?>
+<?php
+$commentbox = '';
+$id = $this->getBusiness()->getId();
+$page_id = $this->getPageId($id)->getPageId();
+$businessUserId = $this->getBusiness()->getBusinessuserId(); 
+$baseUrl = $this->getBaseUrl();
+$mediaUrl = $this->getMediaUrl();
+$data = $this->getCollection($page_id);
+$tagLine = $data->getTagLine();
+$cover = $data->getImage();
+$website = $data->getMainWebsiteUrl();
+//$website = $this->getBusinessWebsite($businessUserId);
+$category = $this->getBusinessCategory($businessUserId);
+$customerid = $this->getCustomerId();
+$totalfollows = $this->getTotalFollows($id);
+$checkFollow = $this->getCheckFollowBusiness($customerid,$id);
+//$myReviews = $this->getReviews($id);
+
+$allReviews = $this->getCollectionReviews($id);
+
+$websiteWithouthttp = str_replace("https://","",$website);
+$websiteWithouthttp = str_replace("http://","",$websiteWithouthttp);
+?>
+<?php
+	$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+	$customerObj = $objectManager->create('Magento\Customer\Model\Customer')->load($businessUserId);
+	$isimageAvailable = $customerObj->getProfileImage();
+	$tab_profile = $mediaUrl.'wysiwyg/user-default.jpg';
+	if($customerObj->getId()){
+		if($isimageAvailable!=NULL && $isimageAvailable!=''){
+			$tab_profile = $mediaUrl.$isimageAvailable;			
+		}else{
+			$tab_profile = $mediaUrl.'wysiwyg/user-default.jpg';
+		}
+	}
+?>
+<?php
+if($customerid && $customerGroupid!=4){
+	$businessUpdate = $objectManager->create('Icecube\Businesses\Model\Businesses')->load($id);
+	$organicVisit = $businessUpdate->getOrganicVisits() + 1;
+	$referralVisit = $businessUpdate->getReferralVisits() + 1;
+	
+	if(isset($_COOKIE[$businessUpdate->getBusinessPageUrl()])){		
+		if($_COOKIE[$businessUpdate->getBusinessPageUrl()]=="organic_visit"){
+			$businessUpdate->setOrganicVisits($organicVisit);
+		}
+	}
+	else{
+		$businessUpdate->setReferralVisits($referralVisit);
+	}
+	$businessUpdate->save();
+}
+?>
+<?php
+/*if($customerGroupid == 4){
+echo $this->getLayout()->createBlock("Icecube\Businesses\Block\Frontend\Index")->setTemplate("Magento_Theme::html/account-header-new-two.phtml")->toHtml();
+}else{
+echo $this->getLayout()->createBlock("Icecube\Businesses\Block\Frontend\Index")->setTemplate("Magento_Theme::html/account-header-new.phtml")->toHtml();
+}*/
+?>
+<section class="admin_main_content">
+	<div class="container">
+		<div class="row">
+			<?php
+			echo $this->getLayout()->createBlock("Icecube\Businesses\Block\Frontend\Index")->setTemplate("Icecube_Businesses::sidebar.phtml")->toHtml();
+			?>
+			<div class="business-signup-load-content2">
+                 <div class="loader">&nbsp;</div>
+            </div>
+			<div class="col-sm-9 pull-right">
+				<?php echo $this->getLayout()->createBlock("Icecube\Businesses\Block\Frontend\Index")->setTemplate("Icecube_Businesses::timeline-top-banner.phtml")->toHtml(); ?>
+				<?php if($customerid==$businessUserId && $customerGroupid==4){ ?>
+				<div class="business_tab">
+					<ul class="nav nav-tabs">
+						<li class="active">
+							<a href="#home" data-toggle="tab">
+								<span class="icon_white"></span>Status
+							</a>
+						</li>
+						<li>
+							<a href="#menu1" data-toggle="tab">
+								<span class="icon_coupon"></span>Coupon Announcement
+							</a>
+						</li>
+					</ul>
+					<div class="tab-content">
+						
+						<div id="home" class="tab-pane fade in active">
+						<form name="timeline_status" id="timeline_status" class="status-form" enctype="multipart/form-data">
+							<div class="tab_profile">
+								<img src="<?php echo $tab_profile ?>" alt="" />
+							</div>
+							<span class="tab_textarea">
+								<textarea cols="" name="text" class="input-status-text" rows="" placeholder="Write something engaging for your followers..." required=""></textarea>
+							</span>
+							<div class="tab_add">
+								<div class="image-upload">
+									<label for="file-input-status" required="required">
+										<img src="<?php echo $mediaUrl ?>wysiwyg/image-upload.png" alt="" />
+									</label>
+									<label class="ttl_addphoto">Add Photo</label>
+									<div class="" id="select_file_status"></div>
+									<input id="file-input-status" type="file" name="status-image" class="status-image"/>
+								</div>
+								<div class="publish">
+									<button class="publish-botton" title="Publish">Publish</button><!--<input type="submit" value="Publish" name="submit">-->
+								</div>
+							</div>
+						<input type="hidden" name="id" value="<?php echo $id ?>">
+						<input type="hidden" name="type" value="0">
+						<input type="hidden" name="imageuploaded" value="0" class="imageuploaded">
+						<input type="hidden" name="business_user" value="<?php echo $businessUserId; ?>" class="business_user">
+						</form>
+						</div>
+						
+						
+						<div id="menu1" class="tab-pane fade">
+						<form name="timeline_status" id="coupon_announcement" class="status-form" enctype="multipart/form-data">
+							<div class="tab_profile">
+								<img src="<?php echo $tab_profile ?>" alt="" />
+							</div>
+							<span class="tab_textarea">
+								<textarea cols="" name="text" class="input-status-text" rows="" placeholder="Write something engaging for your followers..." required=""></textarea>
+							</span>
+							<div class="tab_add">
+								<div class="image-upload">
+									<label for="file-input-coupon" required="required">
+										<img src="<?php echo $mediaUrl ?>wysiwyg/image-upload.png" alt="" />
+									</label>
+									<label class="ttl_addphoto">Add Photo</label>
+									<div class="" id="select_file_coupon"></div>
+
+									<input id="file-input-coupon" type="file" name="status-image" class="status-image"/>
+								</div>
+								<div class="publish">
+									<button class="publish-botton" title="Publish">Publish</button>
+								</div>
+							</div>
+						<input type="hidden" name="id" value="<?php echo $id ?>">
+						<input type="hidden" name="type" value="1">
+						<input type="hidden" name="imageuploaded" value="0" class="imageuploaded">
+						<input type="hidden" name="business_user" value="<?php echo $businessUserId; ?>" class="business_user">
+						</form>
+						</div>
+						
+					</div>
+				</div>
+				<?php } ?>
+				<?php 
+				$customerReviewCount = $this->getCustomerReviewCount($id,$customerid);
+				if($customerid && $customerGroupid!=4 && $customerReviewCount==0 && $checkFollow != 0){ ?>
+				<div class="business_comments">
+					<form name="reviewbox" id="reviewbox" action="/businesses/reviews/submit" method="post">
+							<div class="top">
+						<span>
+							<a title="Leave a Review" href="#">Leave a Review</a>
+						</span>
+					</div>
+						<div class="comment_content">
+							<div class="comment_area">
+							<?php
+								$customerObj = $objectManager->create('Magento\Customer\Model\Customer')->load($customerid);
+								$isimageAvailable = $customerObj->getProfileImage();
+								$cprofilepic = $mediaUrl.'wysiwyg/user-default.jpg';
+								if($customerObj->getId()){
+									if($isimageAvailable!=NULL && $isimageAvailable!=''){
+										$cprofilepic = $mediaUrl.$isimageAvailable;			
+									}else{
+										$cprofilepic = $mediaUrl.'wysiwyg/user-default.jpg';
+									}
+								}
+								?>
+							<div class="tab_profile">
+								<img src="<?php echo $cprofilepic; ?>" width="80" height="80" />
+							</div>
+							<span class="tab_textarea">
+								<textarea cols="" name="txtreview" rows="" placeholder="Leave a review about this business" class="txtreview"></textarea>
+							</span>
+							<!--<a href="javascript:void(0);" class="business_follow" onclick="follow('<?php echo $page_id; ?>','<?php echo $id ?>','<?php echo $customerid; ?>','follow')">Follow</a>-->
+							<input type="hidden" value="<?php echo $customerid; ?>" name="rcustomerid" class="r_customer_id"/>
+							<input type="hidden" value="<?php echo $id; ?>" name="rbusinessid" class="r_business_id"/>
+							<input type="hidden" value="<?php echo $page_id; ?>" name="rpageid" class="r_page_id"/>
+						</div>
+							<div class="tab_add">
+							<div class="image-upload">
+								<div class="review_rating">
+									<label class="ttl_addphoto">Business Rating</label>
+									<fieldset class="rating">
+										<input id="star5" name="rating" type="radio" value="5" />
+										<label class="full" title="Awesome - 5 stars" for="star5"></label>
+										<input id="star4" name="rating" type="radio" value="4" />
+										<label class="full" title="Pretty good - 4 stars" for="star4"></label>
+										<input id="star3" name="rating" type="radio" value="3" />
+										<label class="full" title="Meh - 3 stars" for="star3"></label>
+										<input id="star2" name="rating" type="radio" value="2" />
+										<label class="full" title="Kinda bad - 2 stars" for="star2"></label>
+										<input id="star1" name="rating" type="radio" value="1" />
+										<label class="full" title="Sucks big time - 1 star" for="star1"></label>
+									</fieldset>
+								</div>
+							</div>
+							<div class="publish">
+								<input type="submit" value="Publish" name="submit" class="publish-review" />
+							</div>
+						</div>
+						</div>
+					</form>
+				</div>
+				<?php }else{
+					$commentbox = ' without-review-box';
+				} ?>
+				
+				
+				<?php foreach($allReviews as $review): ?>
+				<div class="comment_box<?php echo $commentbox; ?>">
+					<?php
+					$rating = $review->getRating();
+					if($rating){
+						$rating = $rating * 20;
+					}else{
+						$rating = 0;
+					}
+					$customerInfo = $this->getCustomerDetails($review->getCustomerId());
+					$comments = $this->getComments($review->getId()); ?>
+					<?php
+						$customerObj = $objectManager->create('Magento\Customer\Model\Customer')->load($customerInfo->getId());
+						$isimageAvailable = $customerObj->getProfileImage();
+						$cprofilepic = $mediaUrl.'wysiwyg/user-default.jpg';
+						if($customerObj->getId()){
+							if($isimageAvailable!=NULL && $isimageAvailable!=''){
+								$cprofilepic = $mediaUrl.$isimageAvailable;			
+							}else{
+								$cprofilepic = $mediaUrl.'wysiwyg/user-default.jpg';
+							}
+						}
+						?>
+					<?php if($review->getStatusId()!=NULL && $review->getStatusId()!=''){
+						$status = $objectManager->create('Icecube\Businesses\Model\Timelinestatus')->load($review->getStatusId());
+					?>
+						<div class="comment-detail" id="<?php echo $review->getId(); ?>">
+						<div class="tab_profile">
+							<img src="<?php echo $cprofilepic ?>" />
+						</div>
+						<div class="main-comment-detail">
+							<div class="status-wrapper">
+							<h2><?php echo $customerInfo->getName(); ?></h2>
+							<?php $reviewId = $review->getId(); ?>
+							<?php if($customerid==$businessUserId){ ?>
+							<a class="delete-status" href="<?php echo $this->getBaseUrl(); ?>businesses/view/deletereview?review_id=<?php echo $reviewId; ?>"><i class="fa fa-trash"></i></a>
+							<?php } ?>
+							</div>
+							<?php if($status->getText()!=NULL && $status->getText()!=''){ ?>								 
+							<p><?php echo nl2br($status->getText()); ?></p>
+							<?php } ?>
+
+							<?php if($status->getImage()!=NULL && $status->getImage()!=''){ ?>								 
+							<div class="status-img"><img src="<?php echo $mediaUrl.$status->getImage(); ?>"/></div>
+							<?php } ?>
+							<div class="post_block coupan">
+								<div class="date_time">
+									<?php 
+										$newDateTime = date('m/d/Y h:i A', strtotime($review->getDatetime()));
+										echo $newDateTime;
+									?>
+										
+									</div>
+								<?php if($rating){?>
+								<div class="yellow_rating">
+									<div class="innner-rating-div" style="width: <?php echo $rating; ?>%">
+										<img src="<?php echo $mediaUrl ?>wysiwyg/yellow_rating.png" alt="" />
+									</div>
+								</div>
+								<?php } ?>
+							</div>
+							
+						</div>
+					</div>
+					<?php }else{ ?>
+					<?php
+						/*if(!$customerInfo->getId()){
+							continue;
+						}*/
+					?>
+					
+					<div class="comment-detail" id="<?php echo $review->getId(); ?>">
+						<div class="tab_profile">
+							<img src="<?php echo $cprofilepic ?>" />
+						</div>
+						<div class="main-comment-detail">
+							<div class="review-wrap">
+								<h2><?php echo $customerInfo->getName(); ?></h2>
+								<?php $reviewId = $review->getId();  ?>
+								<?php if($customerid==$businessUserId){ ?>
+								<a class="delete-review" href="<?php echo $this->getBaseUrl(); ?>businesses/view/deletereview?review_id=<?php echo $reviewId; ?>"><i class="fa fa-trash"></i></a>
+								<?php } ?>
+							</div>
+							<p><?php echo $review->getReview(); ?></p>
+							<div class="post_block">
+								<div class="date_time">
+									<?php 
+										$newDateTime = date('m/d/Y h:i A', strtotime($review->getDatetime()));
+										echo $newDateTime;
+									?>
+								</div>
+								<div class="yellow_rating">
+									<div class="innner-rating-div" style="width: <?php echo $rating; ?>%">
+										<img src="<?php echo $mediaUrl ?>wysiwyg/yellow_rating.png" alt="" />
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<?php } ?>
+					<?php  if(count($comments)){ ?>
+					<div class="ans_comment">
+						<?php 
+
+						foreach($comments as $comment):
+						$commentedBy = $this->getCustomerDetails($comment->getCustomerId());
+						?>
+						<?php
+						$customerObj = $objectManager->create('Magento\Customer\Model\Customer')->load($commentedBy->getId());
+						$isimageAvailable = $customerObj->getProfileImage();
+						$cprofilepic = $mediaUrl.'wysiwyg/user-default.jpg';
+						if($customerObj->getId()){
+							if($isimageAvailable!=NULL && $isimageAvailable!=''){
+								$cprofilepic = $mediaUrl.$isimageAvailable;			
+							}else{
+								$cprofilepic = $mediaUrl.'wysiwyg/user-default.jpg';
+							}
+						}
+						?>
+						<div class="leave_comment" id="<?php echo $review->getId().'-'.$comment->getId(); ?>">
+							<div class="tab_profile">
+								<img src="<?php echo $cprofilepic; ?>" />
+							</div>
+							<div class="comment-inner-detail">
+								<div class="comment-wrap">
+									<h2><?php echo $commentedBy->getName(); ?></h2>
+									<?php $commentId = $comment->getId();  ?>
+									<?php if($customerid==$businessUserId){ ?>
+									<a class="delete-comment" href="<?php echo $this->getBaseUrl(); ?>businesses/view/deletereview?comment_id=<?php echo $commentId; ?>"><i class="fa fa-trash"></i></a>
+									<?php } ?>
+								</div>
+								<div class="review-wrap">
+								<p><?php echo $comment->getComment(); ?></p>
+								<div class="comment-date_time">
+									<?php 
+										$newDateTime = date('m/d/Y h:i A', strtotime($comment->getDatetime()));
+										echo $newDateTime;
+									?>
+								</div>
+							</div>
+						</div>
+					</div>
+						<?php endforeach; ?>
+						<?php if(($customerid && $customerGroupid!=4 && $checkFollow != 0) || $customerid==$businessUserId){ ?>
+						<form name="commentbox" id="commentbox" action="/businesses/reviews/submitcomment" method="post">
+							<div class="leave_comment">
+								<?php
+								$customerObj = $objectManager->create('Magento\Customer\Model\Customer')->load($customerid);
+								$isimageAvailable = $customerObj->getProfileImage();
+								$cprofilepic = $mediaUrl.'wysiwyg/user-default.jpg';
+								if($customerObj->getId()){
+									if($isimageAvailable!=NULL && $isimageAvailable!=''){
+										$cprofilepic = $mediaUrl.$isimageAvailable;			
+									}else{
+										$cprofilepic = $mediaUrl.'wysiwyg/user-default.jpg';
+									}
+								}
+								?>
+								<div class="tab_profile">
+									<img src="<?php echo $cprofilepic; ?>" width="80" height="80" />
+								</div>
+								<div class="tab_textarea">
+									<textarea cols="" name="ccomment" rows="" placeholder="Comment on feedback" class="txtcommentbx"></textarea>
+									<div class="tab_add comment-bx">
+									<div class="publish">
+										<input type="submit" value="Publish" name="submit" class="publish-comment" />
+									</div>
+								</div>
+								</div>
+								<input type="hidden" value="<?php echo $customerid; ?>" name="ccustomerid" class="c_customer_id"/>
+								<input type="hidden" value="<?php echo $id; ?>" name="cbusinessid" class="cbusinessid"/>
+								<input type="hidden" value="1" name="cpageid" class="r_page_id"/>
+								<input type="hidden" value="<?php echo $review->getId(); ?>" name="creviewid" class="creviewid"/>
+								
+								
+								
+								
+							</div>
+						</form>
+						<?php } ?>
+					</div>
+					<?php } ?>
+					</div>
+				<?php endforeach; ?>
+				
+				<?php if($this->getReviewPagination($id)): ?>
+				<div class="pages">
+				    <?php echo $this->getReviewPagination($id);?>
+				</div>
+				<?php endif; ?>
+			</div>
+		</div>
+	</div>
+</section>
+<?php
+echo $this->getLayout()->createBlock("Icecube\Businesses\Block\Frontend\Index")->setTemplate("Magento_Theme::html/new-footer.phtml")->toHtml();
+?>
+<?php
+	echo $this->getLayout()->createBlock("Icecube\Businesses\Block\Frontend\Index")->setTemplate("Icecube_Businesses::business-followers.phtml")->toHtml();
+?>
+<script type="text/javascript">
+function getUrlVars() {
+var url = window.location.href;
+var vars = {};
+if (url.indexOf('#') > -1){
+	var hashes = url.split("#")[1];
+	$('html, body').stop(true,true).animate({
+	    scrollTop: $("#"+hashes).offset().top - 135
+	}, 10);
+	
+	/*window.scrollTo(window.scrollX, window.scrollY - 155);
+	alert(window.scrollY);
+	*/
+}
+//return vars;
+}
+</script>
+<script type="text/javascript">
+require(['jquery'],function($){
+	$(document).ready(function()
+	{
+		//getUrlVars();
+		
+		var url = window.location.href;
+		var vars = {};
+		if (url.indexOf('#') > -1){
+			var hashes = url.split("#")[1];
+			$("#"+hashes).addClass("highlight-box");
+			$('html, body').stop(true,true).animate({
+			    scrollTop: $("#"+hashes).offset().top - 200
+			}, 10);
+			setTimeout(function(){
+				$("#"+hashes).removeClass("highlight-box");
+			},5000)
+		}
+		$('#file-input-status').change(function() {
+			
+	        var filename = $('#file-input-status').val();
+	        filename = filename.replace(/\\/g, "/");
+
+			var rest = filename.substring(0, filename.lastIndexOf('/') + 1);
+			var last = filename.substring(filename.lastIndexOf('/') + 1, filename.length);
+			
+	        $('#select_file_status').html(last);
+	    });
+	    $('#file-input-coupon').change(function() {
+			
+	        var filename = $('#file-input-coupon').val();
+	        filename = filename.replace(/\\/g, "/");
+
+			var rest = filename.substring(0, filename.lastIndexOf('/') + 1);
+			var last = filename.substring(filename.lastIndexOf('/') + 1, filename.length);
+			
+	        $('#select_file_coupon').html(last);
+
+	    });
+		$(".status-form .publish .publish-botton").click(function()
+		{
+
+			var form = $(this).closest("form");	
+			var formstatusid = form.attr("id");
+			if($("#"+formstatusid+" .status-image").val()=='' || $("#"+formstatusid+" .status-image").val()==null){
+				$("#"+formstatusid+" .imageuploaded").val("0");
+				if($("#"+formstatusid+" .input-status-text").val()==''){
+					alert("Please add text and image");
+					return false;
+				}
+			}else{
+				$("#"+formstatusid+" .imageuploaded").val("1");
+			}
+
+
+			 $(".business-signup-load-content2").show();
+			 $(".publish .publish-botton").attr('disabled', true);
+
+			var formDatastatus = new FormData($("#"+formstatusid+"")[0]);
+			$.ajax(
+			{
+				type: 'post',
+				url: '<?php echo $this->getBaseUrl(); ?>businesses/view/timelinestatus/',
+				data: formDatastatus,
+				processData: false,
+			   	contentType: false,
+	    		dataType: 'json',
+				success:function(data)
+				{					
+					$("#"+formstatusid+"")[0].reset();
+					 window.location.reload(true);
+				},		
+			});
+		});
+		$(".publish-review").click(function()
+		{
+			/*if($(".r_customer_id").val()=='' || $(".r_customer_id").val()==null){
+				alert("Please login to give a review!");
+				return false;
+			}
+			if($(".txtreview").val()=='' || $(".txtreview").val()==null){
+				alert("Please write something!");
+				return false;
+			}*/
+			if (!$("input[name='rating']:checked").val()) {
+		       	alert("Please rate on a scale from 1 to 5");
+		    	return false;
+		    }
+		});
+		$(".publish-comment").click(function(){
+			/*$(this).prevALL("td:has(.abc)").eq(0).find(".abc").val();
+			alert($(this).closest(".txtcommentbx").val());*/
+			newcomment = $(this).parent().parent().prev('.txtcommentbx').val();
+			if(newcomment=='' || newcomment==null){
+				alert("Please write something!");
+				return false;
+			}			
+		});
+	});
+});
+</script>
+
+
+
+
+

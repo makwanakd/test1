@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+   <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../lib/internal/Magento/Framework/ObjectManager/etc/config.xsd">
+       <preference for="Magento\Contact\Block\ContactForm" type="Icecube\Contact\Block\ContactForm"/>
+       <!--<preference for="Magento\Customer\Controller\Account\CreatePost" type="Icecube\Contact\Controller\Account\CreatePost" />-->
+       <!--<preference for="Magento\Contact\Controller\Index" type="Icecube\Contact\Controller\Index"/>-->
+   </config>

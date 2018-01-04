@@ -1,0 +1,69 @@
+<?php
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$id = $this->getBusiness()->getId();
+$allfollowers = $this->getFollowers($id);
+$mediaUrl = $this->getMediaUrl();
+$category = $objectManager->create('\Icecube\Extrafields\Model\Category\Types')->getAllOptions();
+?>
+<div id="followers-popup" class="modal fade">
+<div class="modal-dialog">
+<div class="modal-header">
+<div class="pull-left">Business Followers</div>
+<div class="pull-right"><button class="close" type="button" data-dismiss="modal"><i class="fa fa-times fa-2x">&nbsp;</i></button></div>
+</div>
+<div class="modal-content">
+<div class="followers-content">
+<div class="fcustomer-info">
+<div class="fcustomer-photo hdr">Profile Image</div>
+<div class="fcustomer-name hdr">Customer Name</div>
+<div class="fcustomer-preferences hdr">Preferences</div>
+</div>
+<?php foreach($allfollowers as $follower){
+	$customerInfo = $this->getCustomerDetails($follower->getCustomerId());
+	$isimageAvailable = $customerInfo->getProfileImage();
+	$cprofilepic = $mediaUrl.'wysiwyg/user-default.jpg';
+	$customerId = '';
+	if($customerInfo->getId()){
+		$customerid = $customerInfo->getId();
+		if($isimageAvailable!=NULL && $isimageAvailable!=''){
+			$cprofilepic = $mediaUrl.$isimageAvailable;			
+		}else{
+			$cprofilepic = $mediaUrl.'wysiwyg/user-default.jpg';
+		}
+	}
+	if($customerid!=''){
+		$resource = $objectManager->get('Magento\Framework\App\ResourceConnection');
+		$connection = $resource->getConnection();
+		$sql = "Select * FROM mgsh_customer_preferences where customer_id = '$customerid'";
+		$result = $connection->fetchAll($sql);
+		$preferences1 = '';
+		$preferences2 = '';
+		$preferences3 = '';
+		if(count($result)>0){
+			$preferences1 = $result['0']['preference1'];
+		    $preferences2 = $result['0']['preference2'];
+		    $preferences3 = $result['0']['preference3']; 
+		}
+	
+	
+?>
+<div class="fcustomer-info">
+<div class="fcustomer-photo"><img src="<?php echo $cprofilepic; ?>" width="80" height="80" /></div>
+<div class="fcustomer-name"><?php echo $customerInfo->getName(); ?></div>
+<div class="fcustomer-preferences">
+	<?php foreach($category as $c){
+	$value = $c['value'];
+	if($c['value'] != '0'){
+		if($c['value']==$preferences1 || $c['value']==$preferences2 || $c['value']==$preferences3){
+			echo $c['label'].'<br>';
+		}
+	}
+	?>
+	<?php } ?>
+</div>
+</div>
+<?php } } ?>
+</div>
+</div>
+</div>
+</div>

@@ -1,0 +1,65 @@
+<?php //echo $this->getLayout()->createBlock('Magento\Cms\Block\Block')->setBlockId('account-header-new-two')->toHtml();?>
+<?php 
+$id = '';  
+$businessUserId = '';
+$id = $this->getBusiness()->getId();
+$url = $this->getBusiness()->getBusinessPageUrl(); 
+$businessUserId = $this->getBusiness()->getBusinessuserId(); //die;
+$adOffers = $block->getAdOfferCollectionByBusinessId($id);
+$customerId = "";
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance(); //instance 
+$customerSession = $objectManager->create('Magento\Customer\Model\Session');
+if ($customerSession->isLoggedIn()) {
+	$customerId = $customerSession->getCustomerId();
+}
+?>
+
+<section class="admin_main_content">
+	<div class="container">
+		<div class="row"><?php
+			echo $this->getLayout()->createBlock("Icecube\Businesses\Block\Frontend\Index")->setTemplate("Icecube_Businesses::sidebar.phtml")->toHtml();
+			?>
+			<div class="col-sm-9 pull-right">
+
+				<?php echo $this->getLayout()->createBlock("Icecube\Businesses\Block\Frontend\Index")->setTemplate("Icecube_Businesses::timeline-top-banner.phtml")->toHtml(); ?>
+				<?php foreach($adOffers as $adOffer){ ?>
+					<div class="offer_tab">
+						<div class="offer_details">
+							<h3><?php echo $adOffer->getCampaignTitle(); ?></h3>
+							<p><?php echo $adOffer->getAdofferDescription(); ?></p>
+
+			
+							<ul>
+							<?php if($customerId){ ?>
+								<li><a title="Download Offer" href="<?php echo $this->getBaseUrl(); ?>businesses/<?php echo $url; ?>/coupon-details-download?coupon=<?php echo $adOffer->getCouponUniqueUrl(); ?>">Download Offer</a></li>
+							<?php }else{ ?>
+									<li><a title="Download Offer" href="javascript:void(0);" onclick="ViewOffer('<?php echo $this->getBaseUrl(); ?>businesses/<?php echo $url; ?>/coupon-details?coupon=<?php echo $adOffer->getCouponUniqueUrl(); ?>','<?php echo $adOffer->getCouponUniqueUrl(); ?>')">Download Offer</a></li>
+							<?php } ?>
+								<li><a title="View Details" href="javascript:void(0);" onclick="ViewOffer('<?php echo $this->getBaseUrl(); ?>businesses/<?php echo $url; ?>/coupon-details?coupon=<?php echo $adOffer->getCouponUniqueUrl(); ?>','<?php echo $adOffer->getCouponUniqueUrl(); ?>')">View Details</a></li>
+							</ul>
+						</div>
+					</div>
+					<?php } ?>
+			</div>
+		</div>
+	</div>
+	</div>
+</section>
+<?php echo $this->getLayout()->createBlock('Magento\Cms\Block\Block')->setBlockId('account-new-footer')->toHtml();?>
+<?php
+echo $this->getLayout()->createBlock("Icecube\Businesses\Block\Frontend\Index")->setTemplate("Icecube_Businesses::business-followers.phtml")->toHtml();
+?>
+<script type="text/javascript">
+	function ViewOffer(offerUrl,couponcode){
+	require([
+		'jquery',
+		'mage/mage'
+	], function($){
+		$.cookie(couponcode, 'organic_visit', {
+				path:'/',
+				expires: null
+			});
+		window.location = offerUrl;
+	});
+}
+</script>

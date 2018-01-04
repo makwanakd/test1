@@ -1,0 +1,368 @@
+<?php
+	$customerGroupid = 'not-businessuser';
+	$objectManager = \Magento\Framework\App\ObjectManager::getInstance(); 
+	$storeManager = $objectManager->get('Magento\Store\Model\StoreManagerInterface'); 
+	$currentStore = $storeManager->getStore();
+	$businessName = "";
+	$customerId = "";
+	$businessId = "";
+ 	$customerSession = $objectManager->get('Magento\Customer\Model\Session');
+	if($customerSession->isLoggedIn()) {
+        $customer = $customerSession->getCustomer(); 
+        $customerId = $customerSession->getCustomerId(); 
+        $customerGroupid = $customer->getGroupId();
+        
+        $modelcollection = $objectManager->get('\Icecube\Businesses\Model\ResourceModel\Businesses\CollectionFactory')->create();
+
+		$modelcollection->addFieldToFilter('businessuser_id' , $customerId);
+		$businessData = $modelcollection->getFirstItem();
+	 	$businessName = $businessData->getBusinessPageUrl();
+	 	$businessId = $businessData->getId();
+    }
+    if(strpos($currentStore->getCurrentUrl(), $businessName)==FALSE){
+	header('Location: '.$this->getBaseUrl().'businesses/'.$businessName."/analytics");
+	exit();
+}
+?>
+<?php
+$commentbox = '';
+$id = $this->getBusiness()->getId();
+$businessUserId = $this->getBusiness()->getBusinessuserId(); 
+$businessOrganicVisits = $this->getBusiness()->getOrganicVisits(); 
+$businessReferralVisits = $this->getBusiness()->getReferralVisits(); 
+$baseUrl = $this->getBaseUrl();
+$mediaUrl = $this->getMediaUrl();
+
+$adOfferCollection = $this->getCollectionAdOffer($businessUserId);
+
+$totalfollows = $this->getTotalFollows($id);
+
+//$myReviews = $this->getReviews($id);
+
+$allReviews = $this->getReviewCountForBusiness($id);
+
+?>
+<?php
+	$businessAddresses = array();
+	
+	$customerObj = $this->getCustomerDetails($businessUserId);	
+	$count = 0;
+	foreach ($customerObj->getAddresses() as $addresses) {
+		$city = $addresses['city'];
+	    $region = $objectManager->create('Magento\Directory\Model\Region')->load($addresses['region_id']);
+	    $postcode = $addresses->getPostcode();
+	    $state = '';
+		if ($region) {
+            $state = $region->getCode();
+        }
+        
+        $tempAddress = $city.', '.$state.' '.$postcode;
+        $businessAddresses[$count]['city'] = $city;
+        $businessAddresses[$count]['location_name'] = $addresses['location_name'];
+        $businessAddresses[$count]['state'] = $state;
+        $businessAddresses[$count]['postcode'] = $postcode;
+        $businessAddresses[$count]['latlong'] = $this->getLatLong($tempAddress);
+        $count++;
+	}
+?>
+<?php
+$totalRatings = 0;
+$totalReviews = 0;
+$rating = 0;
+foreach($allReviews as $review){
+	if($review->getRating()!='' && $review->getRating()!=NULL){
+		$totalRatings += $review->getRating();
+		$totalReviews++;
+	}
+}
+if($totalRatings){
+	if($totalReviews){
+		$rating = $totalRatings / $totalReviews;
+	}
+}
+$temprating = 0;
+if($rating){
+	$temprating = $rating;
+	$temprating = number_format((float)$temprating, 1, '.', '');
+}
+?>
+<?php
+$media_url = $objectManager->get('Magento\Store\Model\StoreManagerInterface')
+                    ->getStore()
+                    ->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+?>
+<p><?php //echo $this->getLayout()->createBlock('Magento\Cms\Block\Block')->setBlockId('account-header-new-two')->toHtml();?></p>
+<section class="admin_main_content">
+<div class="container">
+<div class="row"><?php
+            echo $this->getLayout()->createBlock("Icecube\Businesses\Block\Frontend\Index")->setTemplate("Icecube_Businesses::sidebar.phtml")->toHtml();
+            ?>
+<div class="col-sm-9 pull-right">
+<div class="business_profile">
+<div id="map" class="b-analytics" style="height: 385px;"></div>
+<div class="business_profile_details">
+<div class="row">
+<div class="col-sm-4">
+<h3>My Ads/Offers</h3>
+</div>
+<div class="col-sm-8">
+<div class="follow_block">
+<div class="form-group">
+<div class="select_group">
+<?php
+$adofferOrganicVisits = 0;
+$adofferReferralVisits = 0;
+$adofferDownloads = 0;
+$adofferPrinted = 0;
+foreach($adOfferCollection as $offers){
+	$adofferOrganicVisits = $offers->getOrganicVisits();
+	$adofferReferralVisits = $offers->getReferralVisits();
+	$adofferDownloads = $offers->getCouponDownloaded();
+	$adofferPrinted = $offers->getCouponPrinted();
+	break;
+}
+?>
+<select class="selectpicker" id="campaigntitles">
+<?php foreach($adOfferCollection as $offers){ ?>
+	<option value="<?php echo $offers->getCampaignTitle();?>" data-offer-info="<?php echo $offers->getOrganicVisits().','.$offers->getReferralVisits().','.$offers->getCouponDownloaded().','.$offers->getCouponPrinted();?>"><?php echo $offers->getCampaignTitle();?></option>
+<?php } ?>
+</select>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="business_offer">
+<div class="row">
+<div class="col-sm-6">
+<div class="thumbnail">
+<div class="thumbnail_top">
+<h3>Inventory Status</h3>
+</div>
+<div class="thumbnail_bottom">
+<h2>$1,000</h2>
+<ul>
+<li><span> <span class="icon" title="" data-toggle="popover" data-placement="bottom" data-content="Your total allocated boxes and labels for this Ad/Offer" data-original-title=""></span> Allocated Boxes/Labels</span> 250/500</li>
+<li><span> <span class="icon" title="" data-toggle="popover" data-placement="bottom" data-content="Total orders fulfilled with your Ad/Offer " data-original-title=""></span> Orders Fulfilled</span> 100</li>
+<li><span> <span class="icon" title="" data-toggle="popover" data-placement="bottom" data-content="Your total remaining boxes and labels for this Ad/Offer" data-original-title=""></span> Remaining Boxes/Labels</span> 150/300</li>
+</ul>
+<div class="get_started"><a title="Add Inventory" href="javascript:void(0);" type="button" data-toggle="modal" data-target="#inventory-popup">Add Inventory</a></div>
+</div>
+</div>
+</div>
+<div class="col-sm-6">
+<div class="thumbnail">
+<div class="thumbnail_top">
+<h3>Business Profile</h3>
+</div>
+<div class="thumbnail_bottom">
+<h2>$1,000</h2>
+<ul>
+<li><span> <span class="icon" title="" data-toggle="popover" data-placement="bottom" data-content="Total organic visits to your Business Profile pages" data-original-title=""></span> Organic Visits</span> <?php echo $businessOrganicVisits; ?></li>
+<li><span> <span class="icon" title="" data-toggle="popover" data-placement="bottom" data-content="Total referral visits to your Business Profile pages" data-original-title=""></span> Referral Visits</span> <?php echo $businessReferralVisits; ?></li>
+<li><span> <span class="icon" title="" data-toggle="popover" data-placement="bottom" data-content="Total times your Business Profile pages have been shared by your online Customers" data-original-title=""></span> Page Shares</span> N/A</li>
+<li><span> <span class="icon" title="" data-toggle="popover" data-placement="bottom" data-content="With this package, your Business will receive 0 landing page to showcase your coupon promotion." data-original-title=""></span> Comments</span> <?php echo $this->getCommentsCountForBusiness($id); ?></li>
+<li><span> <span class="icon" title="" data-toggle="popover" data-placement="bottom" data-content="Total Customer reviews left on your Business Profile" data-original-title=""></span> Customer Reviews</span> <?php echo count($allReviews); ?></li>
+<li><span> <span class="icon" title="" data-toggle="popover" data-placement="bottom" data-content="Your overall Business rating based upon Customer reviews" data-original-title=""></span> Business Rating</span> <?php echo $temprating.'/5.0'; ?></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-sm-6">
+<div class="thumbnail">
+<div class="thumbnail_top">
+<h3>Ad/Offers</h3>
+</div>
+<div class="thumbnail_bottom">
+<h2>$1,000</h2>
+<ul>
+<li><span> <span class="icon" title="" data-toggle="popover" data-placement="bottom" data-content="Total organic visits to your individual Ad/Offer page" data-original-title=""></span> Organic Visits</span> <span class="adoffer-analytic-count adoffer-organic-visits"><?php echo $adofferOrganicVisits; ?></span></li>
+<li><span> <span class="icon" title="" data-toggle="popover" data-placement="bottom" data-content="Total times the Ad/Offer on your moving/return boxes have been scanned" data-original-title=""></span> Box Offer Scans</span> <span class="adoffer-analytic-count adoffer-box-scans">N/A</span></li>
+<li><span> <span class="icon" title="" data-toggle="popover" data-placement="bottom" data-content="Total times your individual Ad/Offer page has been shared by your online Customers" data-original-title=""></span> Social Shares</span> <span class="adoffer-analytic-count adoffer-social-share">N/A</span></li>
+<li><span> <span class="icon" title="" data-toggle="popover" data-placement="bottom" data-content="Total times your individual Ad/Offer has been downloaded by your online Customers" data-original-title=""></span> Coupons Downloaded</span> <span class="adoffer-analytic-count adoffer-coupons-download"><?php echo $adofferDownloads; ?></span></li>
+<li><span> <span class="icon" title="" data-toggle="popover" data-placement="bottom" data-content="Total times your individual Ad/Offer has been printed by your online Customers" data-original-title=""></span> Coupons Printed</span> <span class="adoffer-analytic-count adoffer-coupons-printed"><?php echo $adofferPrinted; ?></span></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="col-sm-6">
+<div class="thumbnail">
+<div class="thumbnail_top">
+<h3>Online Ads</h3>
+</div>
+<div class="thumbnail_bottom">
+<h2>$1,000</h2>
+<ul>
+<li><span> <span class="icon" title="" data-toggle="popover" data-placement="bottom" data-content="Total number of follows from your online advertisements" data-original-title=""></span> Total Follows</span> <?php echo $totalfollows; ?></li>
+<li><span> <span class="icon" title="" data-toggle="popover" data-placement="bottom" data-content="Total number of impressions from your online advertisements" data-original-title=""></span> Total Impressions</span> 1,400</li>
+<li><span> <span class="icon" title="" data-toggle="popover" data-placement="bottom" data-content="Total number of clicks from your online advertisements" data-original-title=""></span> Total Clicks</span> 162</li>
+<li><span> <span class="icon" title="" data-toggle="popover" data-placement="bottom" data-content="Total clickthrough rate from your online advertisements" data-original-title=""></span> Clickthrough Rate</span> .11%</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="infobox-wrapper">
+<?php
+foreach($businessAddresses as $addressinfo){
+	if($addressinfo['latlong']['lat']!='none'){
+		$zipcodeCount = $this->getFreeboxesUsers($addressinfo['postcode']);    	
+		 ?>
+		<div class="infobox">
+		<div id="iw-container">
+		<div class="iw-title"><?php echo $addressinfo['location_name']; ?></div>
+		<div class="iw-content">
+		<ul>
+		<li><span>Registered Zip Codes:</span><strong>32</strong></li>
+		<li><span>freeboxes Users:</span><strong><?php echo count($zipcodeCount); ?></strong></li>
+		<li><span>Boxes Ordered:</span><strong>15,222</strong></li>
+		</ul>
+		</div>
+		</div>
+		</div>	
+	<?php 
+	}
+}
+?>
+</div>
+</section>
+<?php
+$markers = '[';
+$icons = '[';
+$iconColor = 'light_icon.png';
+foreach($businessAddresses as $addressinfo){
+	if($addressinfo['latlong']['lat']!='none'){
+		$markers .= '["", '.$addressinfo['latlong']['lat'].', '.$addressinfo['latlong']['lng'].'],';
+		$icons .= 'new google.maps.MarkerImage("'.$media_url.'wysiwyg/'.$iconColor.'", new google.maps.Size(60, 60), new google.maps.Point(0, 0), new google.maps.Point(30, 30)),';
+		if($iconColor=='light_icon.png'){
+			$iconColor = 'dark_icon.png';
+		}else if($iconColor=='dark_icon.png'){
+			$iconColor = 'light_icon.png';
+		}else{
+			
+		}
+	}	
+}
+$markers .= ']';
+$icons .= ']';
+
+$markers = str_replace('],]',']]',$markers);
+$icons = str_replace(')),]','))]',$icons);
+?>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAf9hekMornNCXXtyW179dYNFhO3vnWtkM" type="text/javascript" xml="space"></script>
+<script src="//rawgit.com/googlemaps/v3-utility-library/master/infobox/src/infobox.js" type="text/javascript" xml="space"></script>
+<script type="text/javascript" xml="space">
+function initialize() {
+    var loc, map, marker, infobox;
+    var bounds = new google.maps.LatLngBounds();
+    var markers = <?php echo $markers; ?>;
+    var icons = <?php echo $icons; ?>;
+    map = new google.maps.Map(document.getElementById("map"), {
+         zoom: 12,
+         mapTypeId: google.maps.MapTypeId.ROADMAP
+    });
+		infobox = new InfoBox({
+	         disableAutoPan: true,
+	         maxWidth: 150,
+	         pixelOffset: new google.maps.Size(-110, -180),
+	         zIndex: null,
+	         boxStyle: {
+	            width: "225px",
+	            overflow: 'visible'
+	        },
+	        closeBoxMargin: "13px 8px 13px 13px",
+	        closeBoxURL: "<?php echo $media_url; ?>wysiwyg/map_info_exit.png",
+	        infoBoxClearance: new google.maps.Size(1, 1)
+    	});
+    var x = document.getElementsByClassName("infobox");
+    for( i = 0; i < markers.length; i++ ) {
+        var position = new google.maps.LatLng(markers[i][1], markers[i][2]);
+        bounds.extend(position);
+        marker = new google.maps.Marker({
+            position: position,
+            map: map,
+            title: markers[i][0],
+            visible: true,
+            icon: icons[i]
+        });
+        google.maps.event.addListener(marker, 'click', (function(marker, i) {
+            return function() {
+                infobox.open(map, this);
+	        	//map.panTo(position);
+	        	infobox.setContent(x[i].innerHTML);
+            }
+        })(marker, i));
+    	map.fitBounds(bounds);
+     }
+     
+   
+}
+google.maps.event.addDomListener(window, 'load', initialize);
+
+</script>
+<div id="inventory-popup" class="modal fade">
+<div class="modal-dialog"><!-- Modal content-->
+<div class="modal-header"><!-- <div class="pull-left">Add Inventory</div> -->
+<div class="pull-right"><button class="close" type="button" data-dismiss="modal"><i class="fa fa-times fa-2x">&nbsp;</i></button></div>
+</div>
+<div class="modal-content">
+<div class="inventory_popup">
+<div class="row">
+<div class="col-sm-7">
+<div class="agency_left"><img src="<?php echo $media_url ?>wysiwyg/customer_imgpop.jpg" alt="" /></div>
+</div>
+<div class="col-sm-5">
+<div class="inventory_right">
+<h2>Looks like you&rsquo;re running low on inventory!</h2>
+<p>Let&rsquo;s keep those ad/offers rolling! Click the &lsquo;Add Inventory&rsquo; button below to get started.</p>
+<div class="inventory_form">
+<div class="form-group">
+<div class="btn-group"><button class="btn btn-border">Add Inventory</button></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p><?php echo $this->getLayout()->createBlock('Magento\Cms\Block\Block')->setBlockId('account-new-footer')->toHtml(); ?></p>
+<style>
+.thumbnail_bottom ul li .adoffer-analytic-count {
+    float: right;
+    width: 20%;
+    text-align: right;
+    font-weight: bold;
+    color: #414142;
+}
+</style>
+<script type="text/javascript">
+require([
+	'jquery',
+	'mage/mage'
+], function($){
+	$('.inventory_form .btn.btn-border').click(function(){
+	   window.location.href='<?php echo $this->getBaseUrl(); ?>add-inventory';
+	})
+	$(document).ready(function(){
+		$("#campaigntitles").change(function(){
+			var offerinfo = $(this).find(':selected').data('offer-info');
+			
+			var offerinfoarr = offerinfo.split(",");
+
+			$(".adoffer-organic-visits").text(offerinfoarr[0]);
+			$(".adoffer-coupons-download").text(offerinfoarr[2]);
+			$(".adoffer-coupons-printed").text(offerinfoarr[3]);
+		})
+	});
+});
+</script>

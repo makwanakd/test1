@@ -1,0 +1,81 @@
+<?php
+
+namespace Icecube\Contact\Controller\Index;
+
+use Magento\Customer\Api\AccountManagementInterface as CustomerAccountManagement;
+use Magento\Customer\Model\Session;
+use Magento\Customer\Model\Url as CustomerUrl;
+use Magento\Framework\App\Action\Context;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Newsletter\Model\SubscriberFactory;
+
+class Request extends \Magento\Newsletter\Controller\Subscriber\NewAction
+{
+	protected $customerAccountManagement;
+	
+	protected $_helper;
+    
+    protected $_api = null;
+    
+	public function __construct(
+        Context $context,
+        SubscriberFactory $subscriberFactory,
+        Session $customerSession,
+        StoreManagerInterface $storeManager,
+        CustomerUrl $customerUrl,
+        CustomerAccountManagement $customerAccountManagement,
+        \Ebizmarts\MailChimp\Helper\Data $helper
+    ) {
+        $this->customerAccountManagement = $customerAccountManagement;
+        \Magento\Newsletter\Controller\Subscriber::__construct(
+            $context,
+            $subscriberFactory,
+            $customerSession,
+            $storeManager,
+            $customerUrl
+        );
+        $this->_helper          = $helper;
+        $this->_api             = $this->_helper->getApi();
+    }
+	public function execute()
+    {
+		$post = $this->getRequest()->getPostValue();
+        if (!$post) {
+            $this->_redirect('');
+            return;
+        }
+            //mailchimp integration starts
+            if(isset($post['npopupemail'])){
+					//$email = 'test8.capital@gmail.com';
+					$email = $post['npopupemail'];
+					
+					$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+					$region = $objectManager->create('Magento\Directory\Model\Region')->load($post['region_id_subscribe']);
+					$regionName = '';
+                    if ($region) {
+                        $regionName = $region->getName();
+                    }
+		            
+		            $mergeVars = array("FNAME" => $post['npopupfname'], "LNAME" => $post['npopuplname'], "STATE" => $regionName);
+		            //$mergeVars = array("FNAME" => "test", "LNAME" => "test2", "GENDER" => "Female", "DOB" => "01/01", "BTELEPHONE" => "7798798", "STELEPHONE" => "7798798", "CGROUP" => "General", "STOREID" => "1");
+		            $api = $this->_api;
+		            //$api = $this->_api;
+		            
+		            $status = 'pending';
+		            try {
+		                $emailHash = md5(strtolower($email));
+		            	$return = $api->lists->members->addOrUpdate('86d7f645c4', $emailHash, null, $status, $mergeVars, null, null, null, null, $email, $status);
+		            	$this->messageManager->addSuccess(__('Thank you for your subscription. Please check your email to complete your signup.'));
+		            } catch (\Exception $e) {
+		                $this->_helper->log($e->getMessage());
+		                $this->messageManager->addException(
+		                    $e,
+		                    __('There was a problem with the subscription: %1', $e->getMessage())
+		                );
+		            }
+		    }
+            //mailchimp integration ends
+
+       $this->getResponse()->setRedirect($this->_redirect->getRedirectUrl());
+	}
+}

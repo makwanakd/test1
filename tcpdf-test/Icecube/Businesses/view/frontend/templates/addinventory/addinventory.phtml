@@ -1,0 +1,359 @@
+<?php
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$customerSession = $objectManager->get('Magento\Customer\Model\Session');
+$customer_Id="";
+$customerGroupid = '';
+if($customerSession->isLoggedIn()) {
+	$customer = $customerSession->getCustomer(); 
+	$customer_Id = $customer->getId(); 
+	$customerGroupid = $customer->getGroupId();
+}
+if($customer_Id!=""){
+	if($customerGroupid!=4){
+		header('Location: '.$this->getBaseUrl().'login/');
+	}
+}else{
+	header('Location: '.$this->getBaseUrl().'login/');
+}
+$media_url = $objectManager->get('Magento\Store\Model\StoreManagerInterface')
+			->getStore()
+			->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+?>
+<?php
+use Magento\Framework\App\Action\Action;
+
+$model = $objectManager->create('\Icecube\Business\Model\Theme\Image')->getBaseUrl();
+$collectionFactory = $block->collectionFactory();
+$_product = $block->loadProduct('24');
+$postParams = $this->getAddToCartParam($_product);
+
+$option_id[] = array();
+$option_value = array();
+?>
+<section class="admin_main_content">
+<div class="container">
+<div class="row">
+<?php
+	echo $this->getLayout()->createBlock("Icecube\Businesses\Block\Frontend\Index")->setTemplate("Icecube_Businesses::profile-settings-sidebar.phtml")->toHtml();
+?>
+<div class="col-sm-9 pull-right">
+   <div class="business-signup-load-content2">
+      <div class="loader">&nbsp;</div>
+   </div>
+<form id="business-signup-form" data-hasrequired="<?php /* @escapeNotVerified */ echo __('* Required Fields') ?>" data-mage-init='{"validation":{}}' data-role="tocart-form" action="<?php echo $postParams['action']; ?>" method="post">
+<input type="hidden" name="product" value="<?php echo $postParams['data']['product']; ?>" />
+                    <input type="hidden" name="<?php echo Action::PARAM_NAME_URL_ENCODED; ?>" value="<?php echo $postParams['data'][Action::PARAM_NAME_URL_ENCODED]; ?>" />
+                    <?php echo $block->getBlockHtml('formkey')?>
+<div class="admin_section">
+<h2>Add Inventory</h2>
+<div class="row">
+<div class="col-sm-12">
+<div class="admion_order_details">
+<?php
+$itemName = array();
+/*$itemName[1] = "";
+$itemName[2] = "";
+$itemName[3] = "";*/
+ 
+$cart = $objectManager->get('\Magento\Checkout\Model\Cart');
+$items = $cart->getQuote()->getAllItems();
+
+foreach($items as $item) {
+ $options = $item->getProduct()->getTypeInstance(true)->getOrderOptions($item->getProduct());
+    $customOptions = $options['options'];
+    if (!empty($customOptions)) {
+        foreach ($customOptions as $option) {
+           $itemName[] = $option['value'];
+        }
+    }         
+}
+//echo"<pre>"; print_r($itemName); die; 
+?>
+<h4>Order Details</h4>
+<ul>
+<li><span class="box-label-info"><?php //if($itemName[1]!=""){ echo $itemName[1]; }else{ ?>Boxes/Labels<?php //} ?></span> <span class="box-label-info-price box-info-price">$0</span></li>
+<li><span class="box-adoffer-info"><?php //if($itemName[2]!=""){ echo $itemName[2]; }else{ ?> Additional Ad/Offers <?php //} ?></span> <span class="box-adoffer-info-price box-info-price">$0</span></li>
+<li><span class="box-subtotal-info">Cart Subtotal</span> <span class="box-subtotal-info-price box-info-price">Free Shipping</span></li>
+<li><span class="box-ordertotal-info">Order Total</span> <span class="box-ordertotal-info-price box-info-price">$0</span></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sign-up-form">
+<div class="panel panel-default">
+<div class="panel-heading">
+<div class="pull-left">Add Inventory</div>
+</div>
+
+<div class="panel-body">
+<div class="row">
+<?php foreach ($_product->getOptions() as $o) {
+	$optionId = '';
+	if($o->getTitle()=='Who are you targeting?'){
+		$optionId = 'inventory-targeting';
+	}else if($o->getTitle()=='Total Boxes/Labels'){
+		$optionId = 'inventory-boxes-labels';
+	}else if($o->getTitle()=='Additional Ad/Offers'){
+		$optionId = 'inventory-additional-offers';
+	}else{
+		
+	}
+	?>
+<div class="col-md-12">
+<div class="form-group"><label><?php echo $o->getTitle(); ?></label>
+<div class="select_group">
+	<select class="selectpicker" name="options[<?php echo $o->getId(); ?>]" id="<?php echo $optionId; ?>" data-validate="{required:true}">
+		<option value="" price="0">Make a selection</option>
+	    <?php
+	    foreach ($o->getValues() as $value) { ?>
+	    <option <?php if(in_array($value->getDefaultTitle(), $itemName)){ ?> selected="selected" <?php }  ?> value="<?php echo $value->getId(); ?>" price="<?php echo $value->getPrice(); ?>"><?php echo $value->getDefaultTitle(); ?></option>
+
+	        
+	    <?php 
+	    //$option_id[] = $value->getOptionId();
+	        //$option_value[$value->getDefaultTitle()] = $value->getOptionTypeId();
+	    } ?>
+	</select>
+</div>
+</div>
+</div>
+<?php
+}
+?>
+</div>
+</div>
+</div>
+<div class="col-sm-12 sign-up-form">
+<div class="panel panel-default">
+                        <div class="panel-heading">
+                           <div class="pull-left">Payment Information</div>
+                           <!--<div class="pull-right">These required fields are kind of important *</div>-->
+                        </div>
+                        <div class="panel-body">
+                           <div class="col-md-12">
+                              <div class="form-group">
+                                 <label>Payment Method</label>
+                                 <div class="select_group">
+                                    <select class="selectpicker" name="payment-method-checkout" id="payment-method-checkout" data-validate="{required:true}">
+                                       <option value="">Make a selection</option>
+                                       <option value="paypal">PayPal</option>
+                                       <option value="credit-card">Credit Card</option>
+                                    </select>
+                                 </div>
+                              </div>
+                           </div>
+                           <div class="card-show">
+                           <div class="col-md-12">
+                              <div class="form-group cards"><img title="Cards" src="<?php echo $media_url ?>wysiwyg/cards.png" alt="Cards" /></div>
+                           </div>
+                           <div class="col-md-6">
+                              <div class="form-group">
+                                 <label>Card Number</label>
+                                 <div class="select_group"><input class="form-control" type="text" /></div>
+                              </div>
+                              <div class="form-group">
+                                 <label>Cardholder Name</label>
+                                 <div class="select_group"><input class="form-control" type="text" /></div>
+                              </div>
+                           </div>
+                           <div class="col-md-6 business-sign-up-payment-info">
+                              <div class="form-group">
+                                 <label>Card Expiration</label>
+                                 <div class="col-md-12">
+                                    <div class="col-md-6">
+                                       <div class="select_group">
+                                          <select class="selectpicker">
+                                             <option value="0">Month</option>
+                                             <option value="01">January</option>
+                                             <option value="02">February</option>
+                                             <option value="03">March</option>
+                                             <option value="04">April</option>
+                                             <option value="05">May</option>
+                                             <option value="06">June</option>
+                                             <option value="07">July</option>
+                                             <option value="08">August</option>
+                                             <option value="09">September</option>
+                                             <option value="10">October</option>
+                                             <option value="11">November</option>
+                                             <option value="12">December</option>
+                                          </select>
+                                       </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                       <div class="select_group">
+                                          <select class="selectpicker">
+                                             <option value="0">Year</option>
+                                             <option value="2016">2016</option>
+                                             <option value="2017">2017</option>
+                                             <option value="2018">2018</option>
+                                             <option value="2019">2019</option>
+                                             <option value="2020">2021</option>
+                                             <option value="2021">2022</option>
+                                             <option value="2023">2023</option>
+                                             <option value="2024">2024</option>
+                                             <option value="2025">2025</option>
+                                             <option value="2026">2026</option>
+                                          </select>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                              <div class="form-group margin-top-8">
+                                 <label>CVV Code</label>
+                                 <div class="select_group"><input class="form-control" type="text" /></div>
+                              </div>
+                           </div>
+                           </div>
+                           <?php /*?>
+                           <div class="col-md-12">
+                              <div class="form-group"><input id="checkbox-1" value="1" class="checkbox-custom" name="checkbox-1" type="checkbox" /> <label class="checkbox-custom-label optional"  for="checkbox-1">Billing address is the same as given in the Address Information section</label></div>
+                           </div>
+                           <?php */?>
+                           <div class="col-md-12">
+                           <?php /*?>
+<div class="form-group"><input id="billing" class="checkbox-custom" autocomplete="off" name="billing" type="checkbox" /> <label class="checkbox-custom-label remove-astrisk" for="billing">Billing address is the same as given in the Address Information section</label></div>
+<?php*/ ?>
+						<div class="form-group">
+						<input id="policy" class="checkbox-custom required" autocomplete="off" name="policy" type="checkbox" /> 
+						<label class="checkbox-custom-label" for="policy">I have read, understood, and agree to the <a title="Terms of Use" href="<?php echo $this->getBaseUrl().'terms-of-use'; ?>">Terms of Use</a> and <a title="Privacy Policy" href="<?php echo $this->getBaseUrl().'privacy-policy'; ?>">Privacy Policy</a></label></div>
+</div>
+                        </div>
+                     </div>
+</div>
+</div>
+<div class="btn-group"><button class="btn btn-grey">Cancel?</button> 
+<button class="btn btn-border" type="submit" title="Pay Now" href="javascript:void(0);" id="complete-signup">Checkout</button>
+</div>
+</div>
+</form>
+</div>
+</div>
+</div>
+</section>
+<?php
+echo $this->getLayout()->createBlock("Icecube\Businesses\Block\Frontend\Index")->setTemplate("Magento_Theme::html/new-footer.phtml")->toHtml();
+?>
+<script>
+require(['jquery', 'jquery/ui','mage/mage',], function($){
+   $(document).ready(function() {
+      $(".business-signup-load-content2").show();
+      inventoryBoxesLabelsPrice = parseInt($("#inventory-boxes-labels option:selected").attr('price'));
+      finalinventoryBoxesLabelsPrice = inventoryBoxesLabelsPrice.toLocaleString();
+      inventoryBoxesLabels = $("#inventory-boxes-labels option:selected").text();
+      if(inventoryBoxesLabels == 'Make a selection'){
+         $(".box-label-info").text("Boxes/Labels");            
+      }else{
+         $(".box-label-info").html(inventoryBoxesLabels);
+      }
+      $(".box-label-info-price").html('$'+finalinventoryBoxesLabelsPrice);
+
+
+      inventoryAdditionalOffersPrice = parseInt($("#inventory-additional-offers option:selected").attr('price'));
+      finalinventoryAdditionalOffersPrice = inventoryAdditionalOffersPrice.toLocaleString();
+      inventoryAdditionalOffers = $("#inventory-additional-offers option:selected").text();
+      if(inventoryAdditionalOffers == 'Make a selection'){
+         $(".box-adoffer-info").text("Additional Ad/Offers");
+      }else{
+         $(".box-adoffer-info").html(inventoryAdditionalOffers);
+      }
+      
+      $(".box-adoffer-info-price").html('$'+finalinventoryAdditionalOffersPrice);
+
+      totalprice = parseInt(finalinventoryBoxesLabelsPrice) + parseInt(finalinventoryAdditionalOffersPrice);
+      $(".box-ordertotal-info-price").html('$'+totalprice);
+      $(".business-signup-load-content2").hide();
+   });
+	$("#payment-method-checkout").on('change',function()
+	{
+		if($(this).val() == 'paypal') {
+			$("#paypal_express").trigger('click');
+			$(".card-show").hide();
+		}
+		if($(this).val() == '' || $(this).val() == null) {
+			$(".card-show").hide();
+		}
+		if($(this).val() == 'credit-card'){
+			$(".card-show").show();
+		}
+	});
+	$("#inventory-targeting, #inventory-boxes-labels, #inventory-additional-offers").on('change',function(){
+      inventoryBoxesLabelsPrice = parseInt($("#inventory-boxes-labels option:selected").attr('price'));
+      finalinventoryBoxesLabelsPrice = inventoryBoxesLabelsPrice.toLocaleString();
+      inventoryBoxesLabels = $("#inventory-boxes-labels option:selected").text();
+      if(inventoryBoxesLabels == 'Make a selection'){
+         $(".box-label-info").text("Boxes/Labels");            
+      }else{
+         $(".box-label-info").html(inventoryBoxesLabels);
+      }
+      $(".box-label-info-price").html('$'+finalinventoryBoxesLabelsPrice);
+
+      inventoryAdditionalOffersPrice = parseInt($("#inventory-additional-offers option:selected").attr('price'));
+      finalinventoryAdditionalOffersPrice = inventoryAdditionalOffersPrice.toLocaleString();
+      inventoryAdditionalOffers = $("#inventory-additional-offers option:selected").text();
+      if(inventoryAdditionalOffers == 'Make a selection'){
+         $(".box-adoffer-info").text("Additional Ad/Offers");
+      }else{
+         $(".box-adoffer-info").html(inventoryAdditionalOffers);
+      }
+      
+      $(".box-adoffer-info-price").html('$'+finalinventoryAdditionalOffersPrice);
+
+      totalprice = parseInt(finalinventoryBoxesLabelsPrice) + parseInt(finalinventoryAdditionalOffersPrice);
+      $(".box-ordertotal-info-price").html('$'+totalprice);
+      $(".business-signup-load-content2").show();
+		$form = $("#business-signup-form");
+		$.ajax({
+		    url: '<?php echo $block->getUrl("business/frontend/emptycart");?>',
+		    type: 'POST',
+		    success: function (res) {
+		        var urlAction = $("#business-signup-form").attr('action');
+				$.ajax(
+				{
+					url: urlAction,
+					type: 'POST',
+					data: $form.serialize(),
+					success: function() {
+						//showLoader($btn,false);
+                  $(".business-signup-load-content2").hide();
+					}
+				})
+			}
+		});
+	});
+  
+     
+	/*$optionId = 'inventory-targeting';
+	$optionId = 'inventory-boxes-labels';
+	$optionId = 'inventory-additional-offers';*/
+	$("#business-signup-form").on('submit',function()
+	{
+		if ($('#business-signup-form').valid()) {
+			$bsform = $('#business-signup-form');
+         $.ajax({
+            url: '<?php echo $block->getUrl("business/frontend/checkoutinventory");?>',
+            type: 'POST',
+            data: $bsform.serialize(),
+            success: function (res) {
+               /*$('#business-signup-form #complete-signup').removeAttr('disabled');
+               $('#business-signup-form #complete-signup i').remove();*/
+               $(".one-step-checkout .action-update").trigger('click');
+               $("#onestepcheckout-button-place-order").trigger('click');
+               return false;  
+            }
+         });			
+		}
+		return false;
+	});
+
+})
+</script>
+<style>
+.cms-add-inventory .card-show {
+    display: none;
+}
+.cms-add-inventory .box-info-price {
+    float: right;
+    width: 15%;
+    text-align: right;
+}
+</style>

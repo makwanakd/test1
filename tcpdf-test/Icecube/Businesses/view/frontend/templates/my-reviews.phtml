@@ -1,0 +1,81 @@
+<?php $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); ?>
+<?php
+  $_storeManager = $objectManager->get('Magento\Store\Model\StoreManagerInterface'); 
+  $currentStore = $_storeManager->getStore(); 
+  $base_url = $objectManager->get('Magento\Store\Model\StoreManagerInterface')
+              ->getStore($currentStore)
+              ->getBaseUrl();
+   $mediaUrl = $this->getMediaUrl();
+
+$customerSession = $objectManager->get('Magento\Customer\Model\Session');
+$customer_Id="";
+if($customerSession->isLoggedIn()) {
+	$customer = $customerSession->getCustomer(); 
+	$customer_Id = $customer->getId(); 
+	$customerGroupid = $customer->getGroupId();
+}
+if($customer_Id!=""){
+	if($customerGroupid==4){
+	header('Location: '.$this->getBaseUrl().'profile/settings/');
+	}
+}else{
+	header('Location: '.$this->getBaseUrl().'login/');
+}
+$allReviews = $this->getLoginUserCollectionReviews($customer_Id);
+?>
+<?php //echo $block->getLayout()->createBlock('Magento\Cms\Block\Block')->setBlockId('account-new-header')->toHtml();?>
+<section class="admin_main_content">
+	<div class="container">
+		<div class="row"><?php echo $block->getLayout()->createBlock('Magento\Cms\Block\Block')->setBlockId('account-left-sidebar-one')->toHtml();?>
+			<div class="col-sm-9 pull-right">
+				<div class="admin_section">
+					<h2>My Reviews</h2>
+					<div class="row">
+						<?php foreach($allReviews as $review){
+							$business_Id = $review->getBusinessId();		
+							$status_Id = $review->getStatusId();
+							if($status_Id == ''){
+							$businessDetail = $objectManager->create('Icecube\Businesses\Model\Businesses');
+							$businessDetail->load($business_Id);  
+							$customerObj = $objectManager->create('Magento\Customer\Model\Customer')->load($businessDetail->getBusinessuserId());
+							 
+							$rating = $review->getRating();
+							if($rating){
+								$rating = $rating * 20; 
+							}else{
+								 $rating = 0; 
+							}
+						?>
+						<div class="col-sm-12 my-review">
+							<div class="panel panel-default">
+								<div class="panel-heading">
+									<div class="pull-left"><?php echo $customerObj->getBusinessName(); ?> &mdash; <?php $newDateTime = date('m/d/Y h:i A', strtotime($review->getDatetime()));
+										echo $newDateTime; ?>
+									</div>
+								</div>
+								<div class="panel-body">
+									<div class="my-review-content">
+										<div class="col-md-12 no-gutter"> 
+											<?php if($rating){?>
+												<div class="rating-wrapper">
+													<div class="yellow_rating">
+														<div class="innner-rating-div" style="width: <?php echo $rating; ?>%">
+															<img src="<?php echo $mediaUrl ?>wysiwyg/yellow_rating.png" alt="" />
+														</div>
+													</div>
+												</div>
+											<?php } ?>
+											<p><?php echo $review->getReview(); ?></p>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<?php } } ?>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+<?php echo $block->getLayout()->createBlock('Magento\Cms\Block\Block')->setBlockId('account-new-footer')->toHtml();?>
